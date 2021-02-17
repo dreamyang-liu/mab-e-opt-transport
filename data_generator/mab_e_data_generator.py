@@ -5,7 +5,6 @@ from keras.models import Sequential
 import numpy as np
 
 
-
 class MABe_Data_Generator(keras.utils.Sequence):
     def __init__(self,  pose_dict, 
                         batch_size = 2,
