@@ -26,18 +26,14 @@ class MABe_Data_Generator(keras.utils.Sequence):
         self.future_frames = future_frames
         self.frame_skip = frame_skip
 
-        # Data is arranged as [t, flattened_feature_dimensions]
-        #        where t => [past_frames + 1 + future_frames]
-        self.dim = (
-                (past_frames + 1 + future_frames),
-                np.prod(self.feature_dimensions)
-            )
-
         self.shuffle = shuffle
         
         # Raw Data Containers
         self.X = {}
         self.y = []
+
+        # Setup Dimensions of data points
+        self.setup_dimensions()
 
         # Load raw pose dictionary
         self.load_pose_dictionary(pose_dict)
@@ -50,6 +46,19 @@ class MABe_Data_Generator(keras.utils.Sequence):
 
         # Epoch End preparations
         self.on_epoch_end()
+
+    def setup_dimensions(self):
+        # Data is arranged as [t, flattened_feature_dimensions]
+        #        where t => [past_frames + 1 + future_frames]
+        # 
+        # In this version, we flatten the feature dimensions
+        # But another generator, inherited from this class, 
+        # could very well retain the actual structure of the mice
+        # coordinates.
+        self.dim = (
+                (self.past_frames + 1 + self.future_frames),
+                np.prod(self.feature_dimensions)
+            )
 
 
     def load_pose_dictionary(self, pose_dict):
