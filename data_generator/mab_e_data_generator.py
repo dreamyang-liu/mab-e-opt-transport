@@ -45,8 +45,8 @@ class MABe_Data_Generator(keras.utils.Sequence):
         # Setup Utilities
         self.setup_utils()
 
-        # Preprocess annotations
-        self.preprocess_annotations()
+        # Generate a global index of all datapoints
+        self.generate_global_index()
 
         # Epoch End preparations
         self.on_epoch_end()
@@ -82,19 +82,22 @@ class MABe_Data_Generator(keras.utils.Sequence):
         """
         return np.vectorize(self.classname_to_index_map.get)(annotations_list)
 
-    def preprocess_annotations(self):
+    def generate_global_index(self):
         # Define arrays to map video keys to frames 
         self.video_indices = []
         self.frame_indices = []
 
         self.action_annotations = []
 
+        # For all video keys....
         for video_index, video_key in enumerate(self.video_keys):
+            # Extract all annotations
             annotations = self.pose_dict[video_key]['annotations']
             self.action_annotations.extend(annotations) # add annotations to action_annotations        
 
             number_of_frames = len(annotations)
 
+            # Keep a record for video and frame indices
             self.video_indices.extend([video_index] * number_of_frames) # Keep a record of video_indices
             self.frame_indices.extend(range(number_of_frames)) # Keep a record of frame indices
             self.X[video_key] = np.pad(self.pose_dict[video_key]['keypoints'], self.pad_width) # Add padded keypoints for each video key
