@@ -1,42 +1,64 @@
 from tensorflow import keras
-import tensorflow as tf
-import keras
-from keras.models import Sequential
 import numpy as np
 
 
+def calculate_input_dim(feature_dim, architechture, past_frames, future_frames):
+    # Data is arranged as [t, flattened_feature_dimensions]
+    #        where t => [past_frames + 1 + future_frames]
+
+    # In this version, we flatten the feature dimensions
+    # But another generator, inherited from this class,
+    # could very well retain the actual structure of the mice
+    # coordinates.
+    flat_dim = np.prod(feature_dim)
+    if architechture != 'fully_connected':
+        input_dim = ((past_frames + future_frames + 1), flat_dim,)
+    else:
+        input_dim = (flat_dim * (past_frames + future_frames + 1),)
+    return input_dim
+
+
+def mabe_generator(data, augment, shuffle, kwargs):
+    return MABe_Data_Generator(data,
+                               augment=augment,
+                               shuffle=shuffle,
+                               **kwargs)
+
+
 class MABe_Data_Generator(keras.utils.Sequence):
-    def __init__(self,  pose_dict, 
-                        batch_size = 2,
-                        feature_dimensions=(2,2,7),
-                        classes=['other', 'investigation', 'attack', 'mount'],
-                        past_frames=100,
-                        future_frames=100,
-                        frame_skip=1,
-                        shuffle=True):
+    def __init__(self,  pose_dict,
+                 class_to_number,
+                 batch_size=2,
+                 input_dimensions=(2, 2, 7),
+                 augment=False,
+                 past_frames=100,
+                 future_frames=100,
+                 frame_skip=1,
+                 shuffle=True):
 
         self.batch_size = batch_size
-        self.feature_dimensions = feature_dimensions
+        self.dim = input_dimensions
 
-        self.classes=classes
-        self.n_classes=len(classes)
+        self.classname_to_index_map = class_to_number
+        self.n_classes = len(self.classname_to_index_map)
 
         self.past_frames = past_frames
         self.future_frames = future_frames
         self.frame_skip = frame_skip
 
         self.shuffle = shuffle
-        
+        self.augment = augment
+
         # Raw Data Containers
         self.X = {}
         self.y = []
 
         # Setup Dimensions of data points
-        self.setup_dimensions()
+        # self.setup_dimensions()
 
         # Load raw pose dictionary
         self.load_pose_dictionary(pose_dict)
-        
+
         # Setup Utilities
         self.setup_utils()
 
@@ -45,20 +67,6 @@ class MABe_Data_Generator(keras.utils.Sequence):
 
         # Epoch End preparations
         self.on_epoch_end()
-
-    def setup_dimensions(self):
-        # Data is arranged as [t, flattened_feature_dimensions]
-        #        where t => [past_frames + 1 + future_frames]
-        # 
-        # In this version, we flatten the feature dimensions
-        # But another generator, inherited from this class, 
-        # could very well retain the actual structure of the mice
-        # coordinates.
-        self.dim = (
-                (self.past_frames + 1 + self.future_frames),
-                np.prod(self.feature_dimensions)
-            )
-
 
     def load_pose_dictionary(self, pose_dict):
         # Load raw pose dictionary
@@ -70,20 +78,15 @@ class MABe_Data_Generator(keras.utils.Sequence):
         self.setup_padding_utils()
 
         # Setup class conversion utils
-        self.setup_class_conversion_utils()
+        # self.setup_class_conversion_utils()
 
     def setup_padding_utils(self):
         # Prepare to pad frames
         self.left_pad = self.past_frames * self.frame_skip
         self.right_pad = self.future_frames * self.frame_skip
-        self.pad_width = (self.left_pad, self.right_pad), (0, 0), (0, 0), (0, 0)
+        self.pad_width = (self.left_pad, self.right_pad), (0,
+                                                           0), (0, 0), (0, 0)
 
-    def setup_class_conversion_utils(self):
-        # Prepare a classname to idx map
-        self.classname_to_index_map = {}
-        for _idx, class_name in enumerate(self.classes):
-            self.classname_to_index_map[class_name] = _idx
-    
     def classname_to_index(self, annotations_list):
         """
         Converts a list of string classnames into numeric indices
@@ -91,7 +94,7 @@ class MABe_Data_Generator(keras.utils.Sequence):
         return np.vectorize(self.classname_to_index_map.get)(annotations_list)
 
     def generate_global_index(self):
-        # Define arrays to map video keys to frames 
+        # Define arrays to map video keys to frames
         self.video_indices = []
         self.frame_indices = []
 
@@ -101,20 +104,26 @@ class MABe_Data_Generator(keras.utils.Sequence):
         for video_index, video_key in enumerate(self.video_keys):
             # Extract all annotations
             annotations = self.pose_dict[video_key]['annotations']
-            self.action_annotations.extend(annotations) # add annotations to action_annotations        
+            # add annotations to action_annotations
+            self.action_annotations.extend(annotations)
 
             number_of_frames = len(annotations)
 
             # Keep a record for video and frame indices
-            self.video_indices.extend([video_index] * number_of_frames) # Keep a record of video_indices
-            self.frame_indices.extend(range(number_of_frames)) # Keep a record of frame indices
-            self.X[video_key] = np.pad(self.pose_dict[video_key]['keypoints'], self.pad_width) # Add padded keypoints for each video key
+            # Keep a record of video_indices
+            self.video_indices.extend([video_index] * number_of_frames)
+            # Keep a record of frame indices
+            self.frame_indices.extend(range(number_of_frames))
+            # Add padded keypoints for each video key
+            self.X[video_key] = np.pad(
+                self.pose_dict[video_key]['keypoints'], self.pad_width)
 
-        self.y = self.classname_to_index(self.action_annotations) # convert text labels to indices
-        self.X_dtype = self.X[video_key].dtype # Store D_types of X 
-        
-        #generate a global index list for all data points
-        self.indices = np.arange(len(self.frame_indices)) 
+        self.y = np.array(self.action_annotations)
+        # self.y = self.classname_to_index(self.action_annotations) # convert text labels to indices
+        self.X_dtype = self.X[video_key].dtype  # Store D_types of X
+
+        # generate a global index list for all data points
+        self.indices = np.arange(len(self.frame_indices))
 
     def __len__(self):
         return len(self.indices) // self.batch_size
@@ -129,24 +138,38 @@ class MABe_Data_Generator(keras.utils.Sequence):
             self.video_indices[data_index]
         ]
         # Identify the (local) frame_index
-        frame_index = self.frame_indices[data_index]
-        # Slice from beginning of past frames to end of future frames 
+        # to offset original data padding
+        frame_index = self.frame_indices[data_index] + self.left_pad
+        # Slice from beginning of past frames to end of future frames
         slice_start_index = frame_index - self.left_pad
-        slice_end_index = frame_index + 1 + self.right_pad 
+        slice_end_index = frame_index + self.frame_skip + self.right_pad
         assert slice_start_index >= 0
         _X = self.X[video_key][
             slice_start_index:slice_end_index:self.frame_skip
         ]
+        if self.augment:
+            _X = self.augment_fn(_X)
         return _X
 
-        
+    def augment_fn(self, x):
+        # Rotate
+        angle = (np.random.rand()-0.5) * (np.pi * 2)
+        c, s = np.cos(angle), np.sin(angle)
+        rot = np.array([[c, -s], [s, c]])
+        x = np.dot(x, rot)
+
+        # Shift - All get shifted together
+        shift = (np.random.rand(2)-0.5) * 2 * 0.25
+        x = x + shift
+        return x
+
     def __getitem__(self, index):
         batch_size = self.batch_size
         batch_indices = self.indices[
-                        index*batch_size:(index+1)*batch_size]
-        
+            index*batch_size:(index+1)*batch_size]
+
         X = np.empty((batch_size, *self.dim), self.X_dtype)
-        
+
         for batch_index, data_index in enumerate(batch_indices):
             # Obtain the post-processed X value at the said data index
             _X = self.get_X(data_index)
@@ -156,12 +179,10 @@ class MABe_Data_Generator(keras.utils.Sequence):
         y_vals = self.y[batch_indices]
         # Converting to one hot because F1 callback needs one hot
         y = keras.utils.to_categorical(y_vals, num_classes=self.n_classes)
-
         return X, y
 
-
     def on_epoch_end(self):
-        if self.shuffle == True:
+        if self.shuffle:
             np.random.shuffle(self.indices)
 
 
@@ -171,14 +192,16 @@ if __name__ == "__main__":
     pose_dict = np.load(pose_dict_path, allow_pickle=True).item()
 
     generator = MABe_Data_Generator(
-                    pose_dict,
-                    batch_size=2,
-                    feature_dimensions=(2,2,7),
-                    classes=['other', 'investigation', 'attack', 'mount'],
-                    past_frames=100,
-                    future_frames=100,
-                    frame_skip=1,
-                    shuffle=True)
-    
+        pose_dict,
+        batch_size=2,
+        feature_dimensions=(2, 2, 7),
+        classes=['other', 'investigation', 'attack', 'mount'],
+        past_frames=100,
+        future_frames=100,
+        frame_skip=1,
+        shuffle=True)
+
     print(generator[0])
     print("Length : ", len(generator))
+    for X, y in generator:
+        pass
