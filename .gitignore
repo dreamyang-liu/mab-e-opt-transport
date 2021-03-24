@@ -115,4 +115,4 @@ data/
 
 .idea/
 
-results/
+results/*/*.h5

@@ -123,9 +123,8 @@ def train_task3(train_data_path, results_dir, config, pretrained_model_path):
 
 if __name__ == '__main__':
     train_data_path = 'data/task3_train_data.npy'
-    results_dir = 'results/task1_baseline'
-    # pretrained_model_path = 'results/task1_baseline/task1_model.h5'
-    pretrained_model_path = None
+    results_dir = 'results/task3_baseline'
+    pretrained_model_path = 'results/task1_augmented/task1_model.h5'
     from configs.task3_baseline import task3_baseline_config
     config = task3_baseline_config
     train_task3(train_data_path, results_dir, config, pretrained_model_path)
