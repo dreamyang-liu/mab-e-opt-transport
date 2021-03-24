@@ -1,19 +1,20 @@
 from copy import deepcopy
 
-from utils.load_data import load_mabe_data
+from utils.load_data import load_mabe_data_task1
 from utils.dirs import create_dirs
 from utils.preprocessing import normalize_data, transpose_last_axis
 from utils.split_data import split_data
 from utils.seeding import seed_everything
 from trainers.mab_e_trainer import Trainer
-from data_generator.mab_e_data_generator import mabe_generator, calculate_input_dim
+from data_generator.mab_e_data_generator import mabe_generator
+from data_generator.mab_e_data_generator import calculate_input_dim
 from utils.save_results import save_results
 
 
 def train_task1(train_data_path, results_dir, config):
 
     # Load the data
-    dataset, vocabulary = load_mabe_data(train_data_path)
+    dataset, vocabulary = load_mabe_data_task1(train_data_path)
 
     # Create directories if not present
     create_dirs([results_dir])
@@ -84,16 +85,14 @@ def train_task1(train_data_path, results_dir, config):
     val_metrics = trainer.get_metrics(mode='validation')
 
     # Save the results
-    save_results(results_dir, trainer.model, config,
+    save_results(results_dir, 'task1',
+                 trainer.model, config,
                  train_metrics, val_metrics)
 
 
 if __name__ == '__main__':
     train_data_path = 'data/task1_train_data.npy'
-    # results_dir = 'results/task1_baseline'
-    # from configs.task1_baseline import task1_baseline_config
-    # config = task1_baseline_config
-    results_dir = 'results/task1_lstm'
-    from configs.task1_experiments import task1_lstm_config
-    config = task1_lstm_config
+    results_dir = 'results/task1_baseline'
+    from configs.task1_baseline import task1_baseline_config
+    config = task1_baseline_config
     train_task1(train_data_path, results_dir, config)

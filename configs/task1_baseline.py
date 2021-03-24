@@ -1,5 +1,6 @@
 from easydict import EasyDict
 
+# Baseline config - Convolution 1D
 task1_baseline_config = {"seed": 42,
                          "val_size": 0.2,
                          "split_videos": False,

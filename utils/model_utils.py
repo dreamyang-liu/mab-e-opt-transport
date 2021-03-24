@@ -49,7 +49,20 @@ def attention_bn_activate(x, out_dim, query_dim, activation='relu', drop=0.):
     x = attention(x, query_dim, out_dim)
     x = layers.BatchNormalization()(x)
     x = layers.Activation(activation)(x)
+    x = dense_bn_activate(x, out_dim, drop=drop)(x)
     x = layers.MaxPooling1D(2, 2)(x)
     if drop > 0:
         x = layers.Dropout(rate=drop)(x)
     return x
+
+
+def freeze_model_except_last_layer(model):
+    for idx, layer in enumerate(model.layers[:-1]):
+        if not isinstance(layer, layers.BatchNormalization):
+            model.layers[idx].trainable = False
+
+
+def unfreeze_model_except_last_layer(model):
+    for idx, layer in enumerate(model.layers[:-1]):
+        if not isinstance(layer, layers.BatchNormalization):
+            model.layers[idx].trainable = True

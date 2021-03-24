@@ -130,8 +130,7 @@ class MABe_Data_Generator(keras.utils.Sequence):
 
     def get_X(self, data_index):
         """
-        Obtains the X value from a particular 
-        global index
+        Obtains the X value from a particular global index
         """
         # Obtain video key for this datapoint
         video_key = self.video_keys[
