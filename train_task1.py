@@ -31,6 +31,7 @@ def train_task1(train_data_path, results_dir, config, test_data_path):
     # Normalize the x y coordinates
     if config.normalize:
         dataset = normalize_data(dataset)
+        test_data = normalize_data(test_data)
 
     # Split the data
     train_data, val_data = split_data(dataset,

@@ -14,7 +14,7 @@ task1_baseline_config = {"seed": 42,
                          "learning_rate": 1e-3,
                          "dropout_rate": 0.5,
                          "layer_channels": (128, 64, 32),
-                         "epochs": 1,
+                         "epochs": 15,
                          "augment": False}
 
 task1_baseline_config = EasyDict(task1_baseline_config)
