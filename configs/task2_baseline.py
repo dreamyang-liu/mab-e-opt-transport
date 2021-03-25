@@ -4,6 +4,7 @@ from copy import deepcopy
 
 # Task2 uses pretrained model with linear probe and then further fine tuning
 task2_baseline_config = deepcopy(task1_baseline_config)
+task2_baseline_config.split_videos = True
 task2_baseline_config.architecture = "conv_1D"
 task2_baseline_config.layer_channels = (128, 64, 32)
 task2_baseline_config.augment = True

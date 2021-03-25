@@ -13,6 +13,7 @@ from data_generator.mab_e_data_generator import calculate_input_dim
 from utils.save_results import save_results
 from utils.model_utils import freeze_model_except_last_layer
 from utils.model_utils import unfreeze_model_except_last_layer
+from utils.model_utils import copy_model_weights_except_last_layer
 
 
 def train_task3(train_data_path, results_dir, config, pretrained_model_path):
@@ -87,9 +88,16 @@ def train_task3(train_data_path, results_dir, config, pretrained_model_path):
         # Print the model
         trainer.model.summary()
 
+        # We use class weights for different behaviors in Task 3
+        class_weight = config.class_weights[behavior]
+        class_weight = {i: v for i, v in enumerate(class_weight)}
+
         if pretrained_model_path and os.path.exists(pretrained_model_path):
             # Make trainer model as the pretrained model
-            trainer.model = keras.models.load_model(pretrained_model_path)
+            pretrained_model = keras.models.load_model(pretrained_model_path)
+
+            # Copy weights upto last layer
+            copy_model_weights_except_last_layer(trainer.model, pretrained_model)
 
             # Set linear probe training learning rate
             trainer.model.optimizer.learning_rate.assign(config.linear_probe_lr)
@@ -98,7 +106,8 @@ def train_task3(train_data_path, results_dir, config, pretrained_model_path):
             freeze_model_except_last_layer(trainer.model)
 
             # Train linear probe
-            trainer.train(epochs=config.linear_probe_epochs)
+            trainer.train(epochs=config.linear_probe_epochs,
+                          class_weight=class_weight)
 
             # Unfreeze all layers
             unfreeze_model_except_last_layer(trainer.model)
@@ -107,8 +116,6 @@ def train_task3(train_data_path, results_dir, config, pretrained_model_path):
             trainer.model.optimizer.learning_rate.assign(config.learning_rate)
 
         # Train model
-        class_weight = config.class_weights[behavior]
-        class_weight = {i: v for i, v in enumerate(class_weight)}
         trainer.train(epochs=config.epochs, class_weight=class_weight)
 
         # Get metrics

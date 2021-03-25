@@ -13,6 +13,7 @@ class_weights = {"behavior-0": [1, 20],
 
 # Task3 uses pretrained model from task1 and replaces the top layer
 task3_baseline_config = deepcopy(task1_baseline_config)
+task3_baseline_config.split_videos = True
 task3_baseline_config.architecture = "conv_1D"
 task3_baseline_config.layer_channels = (128, 64, 32)
 task3_baseline_config.augment = True

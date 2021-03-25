@@ -49,7 +49,6 @@ def attention_bn_activate(x, out_dim, query_dim, activation='relu', drop=0.):
     x = attention(x, query_dim, out_dim)
     x = layers.BatchNormalization()(x)
     x = layers.Activation(activation)(x)
-    x = dense_bn_activate(x, out_dim, drop=drop)(x)
     x = layers.MaxPooling1D(2, 2)(x)
     if drop > 0:
         x = layers.Dropout(rate=drop)(x)
@@ -66,3 +65,9 @@ def unfreeze_model_except_last_layer(model):
     for idx, layer in enumerate(model.layers[:-1]):
         if not isinstance(layer, layers.BatchNormalization):
             model.layers[idx].trainable = True
+
+
+def copy_model_weights_except_last_layer(target_model, source_model):
+    for idx in range(len(source_model.layers[:-1])):
+        weights = source_model.layers[idx].get_weights()
+        target_model.layers[idx].set_weights(weights)

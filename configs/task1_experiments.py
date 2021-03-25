@@ -2,12 +2,13 @@ from easydict import EasyDict
 from configs.task1_baseline import task1_baseline_config
 from copy import deepcopy
 
-# Augmented conv1D config, uses multiple fully connected layers
-task1_augment_config = deepcopy(task1_baseline_config)
-task1_augment_config.architecture = "conv_1D"
-task1_augment_config.layer_channels = (128, 64, 32)
-task1_augment_config.augment = True
-task1_augment_config = EasyDict(task1_augment_config)
+# Augmented conv1D config
+task1_augmented_config = deepcopy(task1_baseline_config)
+task1_augmented_config.architecture = "conv_1D"
+task1_augmented_config.layer_channels = (128, 64, 32)
+task1_augmented_config.augment = True
+task1_augmented_config.epochs = 50
+task1_augmented_config = EasyDict(task1_augmented_config)
 
 # LSTM config, uses one lstm layer and fully connected layers afer that
 task1_lstm_config = deepcopy(task1_baseline_config)
