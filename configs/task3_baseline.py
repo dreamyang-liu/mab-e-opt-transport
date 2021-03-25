@@ -1,5 +1,5 @@
 from easydict import EasyDict
-from configs.task1_baseline import task1_baseline_config
+from configs.task1_experiments import task1_augmented_config
 from copy import deepcopy
 
 class_weights = {"behavior-0": [1, 20],
@@ -12,11 +12,9 @@ class_weights = {"behavior-0": [1, 20],
                  }
 
 # Task3 uses pretrained model from task1 and replaces the top layer
-task3_baseline_config = deepcopy(task1_baseline_config)
+task3_baseline_config = deepcopy(task1_augmented_config)
 task3_baseline_config.split_videos = True
 task3_baseline_config.architecture = "conv_1D"
-task3_baseline_config.layer_channels = (128, 64, 32)
-task3_baseline_config.augment = True
 task3_baseline_config.linear_probe_lr = 1e-3
 task3_baseline_config.linear_probe_epochs = 30
 task3_baseline_config.learning_rate = 5e-5

@@ -17,6 +17,7 @@ class Trainer:
                  num_classes,
                  class_to_number=None,
                  architecture="conv_1d",
+                 test_generator=None,
                  arch_params={}):
 
         self.input_dim = input_dim
@@ -26,6 +27,8 @@ class Trainer:
 
         self.train_generator = train_generator
         self.val_generator = val_generator
+        self.test_generator = test_generator
+
         self.architecture = architecture
         self.arch_params = arch_params
 
@@ -80,6 +83,8 @@ class Trainer:
             return self.val_generator
         elif mode == 'train':
             return self.train_generator
+        elif mode == 'test':
+            return self.test_generator
         else:
             raise NotImplementedError
 

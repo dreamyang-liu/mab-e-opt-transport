@@ -11,10 +11,11 @@ from data_generator.mab_e_data_generator import calculate_input_dim
 from utils.save_results import save_results
 
 
-def train_task1(train_data_path, results_dir, config):
+def train_task1(train_data_path, results_dir, config, test_data_path):
 
     # Load the data
     dataset, vocabulary = load_mabe_data_task1(train_data_path)
+    test_data, _ = load_mabe_data_task1(test_data_path)
 
     # Create directories if not present
     create_dirs([results_dir])
@@ -24,6 +25,7 @@ def train_task1(train_data_path, results_dir, config):
 
     # Transpose last axis, used for augmentation and normalization
     dataset = transpose_last_axis(deepcopy(dataset))
+    test_data = transpose_last_axis(deepcopy(test_data))
     feature_dim = (2, 7, 2)
 
     # Normalize the x y coordinates
@@ -52,17 +54,25 @@ def train_task1(train_data_path, results_dir, config):
                      "future_frames": config.future_frames,
                      "class_to_number": vocabulary,
                      "frame_skip": config.frame_gap}
+
     train_generator = mabe_generator(train_data,
                                      augment=config.augment,
                                      shuffle=True,
                                      kwargs=common_kwargs)
+
     val_generator = mabe_generator(val_data,
                                    augment=False,
                                    shuffle=False,
                                    kwargs=common_kwargs)
 
+    test_generator = mabe_generator(test_data,
+                                    augment=False,
+                                    shuffle=False,
+                                    kwargs=common_kwargs)
+
     trainer = Trainer(train_generator=train_generator,
                       val_generator=val_generator,
+                      test_generator=test_generator,
                       input_dim=input_dim,
                       class_to_number=vocabulary,
                       num_classes=num_classes,
@@ -83,16 +93,18 @@ def train_task1(train_data_path, results_dir, config):
     # Get metrics
     train_metrics = trainer.get_metrics(mode='train')
     val_metrics = trainer.get_metrics(mode='validation')
+    test_metrics = trainer.get_metrics(mode='test')
 
     # Save the results
     save_results(results_dir, 'task1',
                  trainer.model, config,
-                 train_metrics, val_metrics)
+                 train_metrics, val_metrics, test_metrics)
 
 
 if __name__ == '__main__':
     train_data_path = 'data/task1_train_data.npy'
+    test_data_path = 'data/task1_test_data_converted.npy'
     results_dir = 'results/task1_baseline'
     from configs.task1_baseline import task1_baseline_config
     config = task1_baseline_config
-    train_task1(train_data_path, results_dir, config)
+    train_task1(train_data_path, results_dir, config, test_data_path)
