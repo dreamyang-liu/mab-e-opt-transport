@@ -2,6 +2,11 @@ import numpy as np
 
 
 def load_mabe_data_task1(data_path):
+    """ 
+    Load data for task 1:
+        Task 1 has multiple sequences
+        The vocaubulary denotes the behavior name to class number
+    """
     data_dict = np.load(data_path, allow_pickle=True).item()
     dataset = data_dict['sequences']
     vocabulary = data_dict['vocabulary']
@@ -9,6 +14,12 @@ def load_mabe_data_task1(data_path):
 
 
 def load_mabe_data_task2(data_path):
+    """ 
+    Load data for task 2:
+        Task 2 has multiple sequences for multiple annotators
+        Each annotator has annotations on a different set of sequences
+        The vocaubulary denotes the behavior name to class number
+    """
     data_dict = np.load(data_path, allow_pickle=True).item()
     dataset = data_dict['sequences']
     vocabulary = data_dict['vocabulary']
@@ -22,5 +33,8 @@ def load_mabe_data_task2(data_path):
 
 
 def load_mabe_data_task3(data_path):
+    """ 
+    Load data for task 2:
+    """
     dataset = np.load(data_path, allow_pickle=True).item()
     return dataset

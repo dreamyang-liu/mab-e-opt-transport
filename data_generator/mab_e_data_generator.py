@@ -3,13 +3,15 @@ import numpy as np
 
 
 def calculate_input_dim(feature_dim, architechture, past_frames, future_frames):
-    # Data is arranged as [t, flattened_feature_dimensions]
-    #        where t => [past_frames + 1 + future_frames]
+    """
+    Data is arranged as [t, flattened_feature_dimensions]
+           where t => [past_frames + 1 + future_frames]
 
-    # In this version, we flatten the feature dimensions
-    # But another generator, inherited from this class,
-    # could very well retain the actual structure of the mice
-    # coordinates.
+    In this version, we flatten the feature dimensions
+    But another generator, inherited from this class,
+    could very well retain the actual structure of the mice
+    coordinates.
+    """
     flat_dim = np.prod(feature_dim)
     if architechture != 'fully_connected':
         input_dim = ((past_frames + future_frames + 1), flat_dim,)
@@ -26,6 +28,13 @@ def mabe_generator(data, augment, shuffle, kwargs):
 
 
 class MABe_Data_Generator(keras.utils.Sequence):
+    """
+    Generates window of frames from sequence data
+    * Each window comprises of past and future frames
+    * Frame skip > 1 can be used to increased for subsampling
+    * Augments by rotation and shifting frames
+    * Boundaries are padded with zeros for when window exceeds the limits
+    """
     def __init__(self,  pose_dict,
                  class_to_number,
                  batch_size=2,
@@ -69,19 +78,16 @@ class MABe_Data_Generator(keras.utils.Sequence):
         self.on_epoch_end()
 
     def load_pose_dictionary(self, pose_dict):
-        # Load raw pose dictionary
+        """ Load raw pose dictionary """
         self.pose_dict = pose_dict
         self.video_keys = list(pose_dict.keys())
 
     def setup_utils(self):
-        # Set up padding utilities
+        """ Set up padding utilities """
         self.setup_padding_utils()
 
-        # Setup class conversion utils
-        # self.setup_class_conversion_utils()
-
     def setup_padding_utils(self):
-        # Prepare to pad frames
+        """ Prepare to pad frames """
         self.left_pad = self.past_frames * self.frame_skip
         self.right_pad = self.future_frames * self.frame_skip
         self.pad_width = (self.left_pad, self.right_pad), (0,
@@ -94,7 +100,7 @@ class MABe_Data_Generator(keras.utils.Sequence):
         return np.vectorize(self.classname_to_index_map.get)(annotations_list)
 
     def generate_global_index(self):
-        # Define arrays to map video keys to frames
+        """ Define arrays to map video keys to frames """
         self.video_indices = []
         self.frame_indices = []
 
@@ -151,6 +157,13 @@ class MABe_Data_Generator(keras.utils.Sequence):
         return _X
 
     def augment_fn(self, x):
+        """ 
+        Augment sequences
+            * Rotation - All frames in the sequence are rotated by the same angle
+                using the euler rotation matrix
+            * Shift - All frames in the sequence are shifted randomly 
+                but by the same amount
+        """
         # Rotate
         angle = (np.random.rand()-0.5) * (np.pi * 2)
         c, s = np.cos(angle), np.sin(angle)

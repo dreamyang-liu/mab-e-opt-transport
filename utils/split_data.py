@@ -4,12 +4,20 @@ import pandas as pd
 
 
 def num_to_text(number_to_class, anno_list):
+    """ 
+    Convert list of class numbers to list of class names
+    """
     return np.vectorize(number_to_class.get)(anno_list)
 
 
 def split_data(orig_pose_dictionary, vocabulary, seed=2021,
                test_size=0.5, split_videos=False):
-
+    """ 
+    Split data into train and test:
+    * Full sequences are either put into train or test to avoid data leakage
+    * By default, the "attack" behavior's presence is used to stratify the split
+    * Optionally, the sequences may be split into half and treated as separate sequences
+    """
     number_to_class = {v: k for k, v in vocabulary.items()}
     if split_videos:
         pose_dictionary = {}
