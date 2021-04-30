@@ -1,150 +1,95 @@
-﻿# MAB-e Baselines
+﻿# MABe Baselines
 
-Code for the baseline experiments in the MAB-e challenge.
-
-# Table of contents
-
--   [Getting Started](#getting-started)
--   [Running The Project](#running-the-project)
--   [Template Details](#template-details)
-    -   [Project Architecture](#project-architecture)
-    -   [Folder Structure](#folder-structure)
-    -   [Main Components](#main-components)
--   [Developer Instructions](#developer-instructions)
+Code for the baseline experiments in the MABe Challenge.
 
 # Getting Started
 
-This template allows you to simply build and train deep learning models with checkpoints and tensorboard visualization.
-
-In order to use the template you have to:
-
-1. Define a data loader class.
-2. Define a model class that inherits from BaseModel.
-3. Define a trainer class that inherits.
-4. Define a configuration file with the parameters needed in an experiment.
-5. Run the model using:
+The baselines are simple with minimal requirements. To get started run the following commands.
 
 ```shell
-python main.py -c [path to configuration file]
+git clone http://gitlab.aicrowd.com/aicrowd/research/mab-e/mab-e-baselines.git
+cd mab-e-baselines
+pip install -r requirements.txt
+```
+## Obtaining the data
+
+To get the data formatted to be compatible with this baseline visit [the challenge page](https://www.aicrowd.com/challenges/multi-agent-behavior-representation-modeling-measurement-and-applications)
+
+You'll need to create a `data` folder and place the data files from the challenge there.
+
+```
+data  - Create this folder in this directory
+├──task1_train_data.npy
+├──task2_train_data.npy
+└──task3_train_data.npy
 ```
 
-# Running The Project
+# Running The Code
 
-A simple model for the mnist dataset is available to test the template.
-To run the demo project:
-
-1. Start the training using:
+To run the baselines run the following commands
 
 ```shell
-python main.py -c configs/simple_mnist_config.json
+python train_task1.py
+python train_task2.py
+python train_task3.py
 ```
 
-2. Start Tensorboard visualization using:
+We also provide code for different experiments that vary the architecture and other parameters. These are available in `configs/task1_experiments.py` You can run them with the following command.
 
 ```shell
-tensorboard --logdir=experiments/simple_mnist/logs
+python train_task1_all_experiments.py
 ```
 
-# Template Details
-
-## Folder Structure
+# Folder Structure
 
 ```
-├── main.py             - the main entrypoint for the whole codebase.
+├── train_task1.py                - Entrypoint for training task1 baseline
+├── train_task2.py                - Entrypoint for training task2 baseline
+├── train_task3.py                - Entrypoint for training task3 baseline
+├── train_task3.py                - Entrypoint for training task1 experiments
+│  
+├── configs                       - Contains baseline and experiment configs
+│   ├── task1_baseline.py
+│   ├── task2_baseline.py
+│   ├── task3_baseline.py
+│   └── task1_experiments.py
 │
+├── data_generator
+│   └── mab_e_data_generator.py   - Temporal window generator for training
 │
-├── base                - this folder contains the abstract classes
-│   ├── base_data_loader.py   - this file contains the abstract class of the data loader.
-│   ├── base_model.py   - this file contains the abstract class of the model.
-│   └── base_train.py   - this file contains the abstract class of the trainer.
+├── trainers 
+│   └── mab_e_trainer.py          - Training setup and run manager
 │
-│
-├── model               - this folder contains the models.
-│   └── simple_mnist_model.py
-│
-│
-├── trainer             - this folder contains the trainers.
-│   └── simple_mnist_trainer.py
-│
-|
-├── data_loader         - this folder contains the data loaders.
-│   └── simple_mnist_data_loader.py
-│
-│
-├── configs             - this folder contains the experiment and model configs.
-│   └── simple_mnist_config.json
-│
-│
-├── datasets            - this folder might contain the datasets, and is usually ignored in .gitignore .
-│
-│
-└── utils               - this folder contains any utils you need.
-     ├── config.py      - util functions for parsing the config files.
-     ├── dirs.py        - util functions for creating directories.
-     └── utils.py       - util functions for parsing arguments.
+└── utils
+     ├── config.py                - Functions for parsing the config files.
+     ├── load_data.py             - Loads the challenge data
+     ├── save_results.py          - Save models and validation metrics
+     ├── preprocessing.py         - Normalize and other preprocessing
+     ├── split_data.py            - Split data into training and validation
+     ├── seeding.py               - Seeding functions for reproducibility
+     ├── dirs.py                  - Functions for creating directories.
+     └── args.py                  - Functions for parsing arguments.
 ```
 
-## Developer Instructions
+# Resources
 
-### Models
+## Dataset paper
 
-You need to:
+[The Multi-Agent Behavior Dataset: Mouse Dyadic Social Interactions](https://arxiv.org/abs/2104.02710)
 
-1. Create a model class that inherits from **BaseModel**.
-2. Override the **_build_model_** function which defines your model.
-3. Call **_build_model_** function from the constructor.
+## Challenge Page
 
-### Trainers
+[AIcrowd - Multi-Agent Behavior: Representation, Modeling, Measurement, and Applications](https://www.aicrowd.com/challenges/multi-agent-behavior-representation-modeling-measurement-and-applications)
 
-You need to:
+# Cite
 
-1. Create a trainer class that inherits from **BaseTrainer**.
-2. Override the **_train_** function which defines the training logic.
-
-**Note:** To add functionalities after each training epoch such as saving checkpoints or logs for tensorboard using Keras callbacks:
-
-1. Declare a callbacks array in your constructor.
-2. Define an **_init_callbacks_** function to populate your callbacks array and call it in your constructor.
-3. Pass the callbacks array to the **_fit_** function on the model object.
-
-**Note:** You can use **_fit_generator_** instead of **_fit_** to support generating new batches of data instead of loading the whole dataset at one time.
-
-### Data Loaders
-
-You need to:
-
-1. Create a data loader class that inherits from **BaseDataLoader**.
-2. Override the **_get_train_data()_** and the **_get_test_data()_** functions to return your train and test dataset splits.
-
-**Note:** You can also define a different logic where the data loader class has a function **_get_next_batch_** if you want the data reader to read batches from your dataset each time.
-
-### Configs
-
-You need to define a .json file that contains your experiment and model configurations such as the experiment name, the batch size, and the number of epochs.
-
-### Main
-
-Responsible for building the pipeline.
-
-1. Parse the config file
-2. Create an instance of your data loader class.
-3. Create an instance of your model class.
-4. Create an instance of your trainer class.
-5. Train your model using ".Train()" function on the trainer object.
-
-### From Config
-
-We can now load models without having to explicitly create an instance of each class. Look at:
-
-1. from_config.py: this can load any config file set up to point to the right modules/classes to import
-2. Look at configs/simple_mnist_from_config.json to get an idea of how this works from the config. Run it with:
-
-```shell
-python from_config.py -c configs/simple_mnist_from_config.json
 ```
-
-3. See conv_mnist_from_config.json (and the additional data_loader/model) to see how easy it is to run a different experiment with just a different config file:
-
-```shell
-python from_config.py -c configs/conv_mnist_from_config.json
+@misc{sun2021multiagent,
+      title={The Multi-Agent Behavior Dataset: Mouse Dyadic Social Interactions}, 
+      author={Jennifer J. Sun and Tomomi Karigo and Dipam Chakraborty and Sharada P. Mohanty and David J. Anderson and Pietro Perona and Yisong Yue and Ann Kennedy},
+      year={2021},
+      eprint={2104.02710},
+      archivePrefix={arXiv},
+      primaryClass={cs.LG}
+}
 ```

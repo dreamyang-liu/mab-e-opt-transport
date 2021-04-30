@@ -10,6 +10,11 @@ from utils.model_utils import add_layer
 
 
 class Trainer:
+    """
+    Custom Trainer class for sequential window data
+    Setup and manage training for different models
+    Supports different architectures
+    """
     def __init__(self, *,
                  train_generator,
                  val_generator,
@@ -37,7 +42,7 @@ class Trainer:
 
     def initialize_model(self, layer_channels=(512, 256), dropout_rate=0.,
                          learning_rate=1e-3, conv_size=5):
-
+        """ Instantiate the model based on the architecture """
         inputs = layers.Input(self.input_dim)
         x = layers.BatchNormalization()(inputs)
 
@@ -68,6 +73,7 @@ class Trainer:
         self.model = model
 
     def train(self, epochs=20, class_weight=None, callbacks=[]):
+        """ Train the model for given epochs """
         if self.model is None:
             print("Please Call trainer.initialize_model first")
             return
@@ -79,6 +85,7 @@ class Trainer:
                        callbacks=callbacks)
 
     def get_generator_by_mode(self, mode='validation'):
+        """ Select the generator - Train, Validation or Test"""
         if mode == 'validation':
             return self.val_generator
         elif mode == 'train':
@@ -89,6 +96,7 @@ class Trainer:
             raise NotImplementedError
 
     def get_labels(self, generator):
+        """ Get all the ground truth labels"""
         y_val = []
         for _, y in generator:
             y_val.extend(list(y))
@@ -96,11 +104,16 @@ class Trainer:
         return y_val
 
     def get_predictions(self, generator):
+        """ Get all the model predictions """
         y_val_pred = self.model.predict(generator)
         y_val_pred = np.argmax(y_val_pred, axis=-1)
         return y_val_pred
 
     def get_metrics(self, mode='validation'):
+        """
+        Get metrics - F1, Precision, Recall for each class
+        "mode" can be set to use training or validation data
+        """
         generator = self.get_generator_by_mode(mode)
         labels = self.get_labels(generator)
         predictions = self.get_predictions(generator)
