@@ -116,3 +116,6 @@ data/
 .idea/
 
 results/*/*.h5
+
+results/.DS_Store
+results/.DS_Stor

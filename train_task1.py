@@ -89,7 +89,7 @@ def train_task1(train_data_path, results_dir, config, test_data_path):
     trainer.model.summary()
 
     # Train model
-    trainer.train(epochs=config.epochs)
+    # trainer.train(epochs=config.epochs)
 
     # Get metrics
     train_metrics = trainer.get_metrics(mode='train')

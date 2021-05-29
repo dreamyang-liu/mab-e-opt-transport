@@ -2,6 +2,7 @@ import numpy as np
 from tensorflow import keras
 from tensorflow.keras.models import Model
 import tensorflow.keras.layers as layers
+from tensorflow.python.ops.numpy_ops.np_math_ops import average
 import tensorflow_addons as tfa
 import sklearn
 import pandas as pd
@@ -123,7 +124,18 @@ class Trainer:
             labels, predictions, average=None)
         prec_scores = sklearn.metrics.recall_score(
             labels, predictions, average=None)
+
+        # Average precsion - all labels not equal to correct label are mistakes
+        ap_scores = []
+        for single_label in sorted(np.unique(labels)):
+            labels_l = labels == single_label
+            preds_l = predictions == single_label
+            ap_score_l = sklearn.metrics.average_precision_score(
+                labels_l, preds_l, average='macro')
+            ap_scores.append(ap_score_l)
+        
         classes = list(self.class_to_number.keys())
         metrics = pd.DataFrame({"Class": classes, "F1": f1_scores,
-                               "Precision": prec_scores, "Recall": rec_scores})
+                                "Precision": prec_scores, "Recall": rec_scores,
+                                "Average Precision": ap_scores})
         return metrics

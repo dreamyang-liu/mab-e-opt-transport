@@ -33,9 +33,13 @@ task1_fc_config = EasyDict(task1_fc_config)
 
 # Single Frame Model, uses a fully connected model
 task1_singleframe_config = deepcopy(task1_fc_config)
+task1_singleframe_config.layer_channels = (512, 256, 128, 64)
+task1_singleframe_config.learning_rate = 5e-3
 task1_singleframe_config.past_frames = 0
 task1_singleframe_config.future_frames = 0
 task1_singleframe_config.frame_gap = 1
+task1_singleframe_config.epochs = 15
+task1_singleframe_config.dropout_rate = 0.2
 task1_singleframe_config = EasyDict(task1_singleframe_config)
 
 # Causal Model, only uses past frames and 1D CNN

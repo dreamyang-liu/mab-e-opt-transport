@@ -91,6 +91,13 @@ def train_task2(train_data_path, results_dir, config, pretrained_model_path):
             # Make trainer model as the pretrained model
             trainer.model = keras.models.load_model(pretrained_model_path)
 
+            # Get zero shot trainer metrics
+            val_metrics_zs = trainer.get_metrics(mode='validation')
+            val_metrics_zs.to_csv(f'{results_dir}/{taskname}_val_results_zeroshot.csv', 
+                                  index=False)
+
+            val_metrics = trainer.get_metrics(mode='validation')
+
             # Freeze all layers except last layer
             freeze_model_except_last_layer(trainer.model)
 
