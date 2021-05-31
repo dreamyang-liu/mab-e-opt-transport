@@ -31,7 +31,6 @@ seed = parser.parse_args().seed
 results_dir = 'results/task1_baseline'
 config = task1_baseline_config
 config.seed = seed
-config.epochs = 1
 train_task1(task1_train_data_path, results_dir, config, task1_test_data_path)
 
 # # Task 1 Augmented - Will be used as pretrain model for task 2
