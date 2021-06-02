@@ -1,5 +1,8 @@
+import os
+import argparse
 from copy import deepcopy
 
+import tensorflow as tf
 from utils.load_data import load_mabe_data_task1
 from utils.dirs import create_dirs
 from utils.preprocessing import normalize_data, transpose_last_axis
@@ -11,7 +14,8 @@ from data_generator.mab_e_data_generator import calculate_input_dim
 from utils.save_results import save_results
 
 
-def train_task1(train_data_path, results_dir, config, test_data_path):
+def train_task1(train_data_path, results_dir, config, test_data_path,
+                pretrained_model_path=None, skip_training=False):
 
     # Load the data
     dataset, vocabulary = load_mabe_data_task1(train_data_path)
@@ -80,16 +84,24 @@ def train_task1(train_data_path, results_dir, config, test_data_path):
                       architecture=config.architecture,
                       arch_params=config.architecture_parameters)
 
-    # Model initialization
-    trainer.initialize_model(layer_channels=config.layer_channels,
-                             dropout_rate=config.dropout_rate,
-                             learning_rate=config.learning_rate)
+    # In case of only using
+    if skip_training and pretrained_model_path is not None:
+        trainer.model = tf.keras.models.load_model(pretrained_model_path)
 
-    # Print the model
-    trainer.model.summary()
+        # Print model summary
+        trainer.model.summary()
 
-    # Train model
-    trainer.train(epochs=config.epochs)
+        print("Skipping Training")
+    else:
+        # Model initialization
+        trainer.initialize_model(layer_channels=config.layer_channels,
+                                 dropout_rate=config.dropout_rate,
+                                 learning_rate=config.learning_rate)
+        # Print model summary
+        trainer.model.summary()
+
+        # Train model
+        trainer.train(epochs=config.epochs)
 
     # Get metrics
     train_metrics = trainer.get_metrics(mode='train')
@@ -104,8 +116,31 @@ def train_task1(train_data_path, results_dir, config, test_data_path):
 
 if __name__ == '__main__':
     train_data_path = 'data/task1_train_data.npy'
-    test_data_path = 'data/task1_test_data_converted.npy'
+    test_data_path = 'data/task1_test_ground_truth.npy'
     results_dir = 'results/task1_baseline'
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--seed', type=int, default=42, help='Seed value')
+    parser.add_argument('--skip-training', action="store_true",
+                        help='Only generate metrics')
+
+    parsed_args = parser.parse_args()
+    seed = parsed_args.seed
+    skip_training = parsed_args.skip_training
+
     from configs.task1_baseline import task1_baseline_config
     config = task1_baseline_config
-    train_task1(train_data_path, results_dir, config, test_data_path)
+
+    pretrained_model_path = None
+    if skip_training:
+        model_path = f'{results_dir}/task1_seed_{seed}_model.h5'
+        if not os.path.exists(model_path):
+            raise FileNotFoundError(f"Pretrained model not found - \
+                    {model_path} - Required for skip-training")
+        else:
+            pretrained_model_path = model_path
+
+    train_task1(train_data_path, results_dir,
+                config, test_data_path,
+                pretrained_model_path,
+                skip_training)

@@ -40,14 +40,14 @@ train_task1(task1_train_data_path, results_dir, config, task1_test_data_path)
 
 # Task 2 Baseline
 results_dir = 'results/task2_baseline'
-pretrained_model_path = 'results/task1_augmented/task1_model.h5'
+pretrained_model_path = f'results/task1_augmented/task1_seed_{seed}_model.h5'
 config = task2_baseline_config
 config.seed = seed
 train_task2(task2_train_data_path, results_dir, config, pretrained_model_path)
 
 # Task 3 Baseline
 results_dir = 'results/task3_baseline'
-pretrainedn_model_path = 'results/task1_augmented/task1_model.h5'
+pretrained_model_path = f'results/task1_augmented/task1_seed_{seed}_model.h5'
 config = task3_baseline_config
 config.seed = seed
 train_task3(task3_train_data_path, results_dir, config, pretrained_model_path)

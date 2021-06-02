@@ -1,6 +1,7 @@
 import os
+import argparse
 from copy import deepcopy
-from tensorflow import keras
+import tensorflowm as tf
 
 from utils.load_data import load_mabe_data_task2
 from utils.dirs import create_dirs
@@ -89,7 +90,7 @@ def train_task2(train_data_path, results_dir, config, pretrained_model_path):
 
         if pretrained_model_path and os.path.exists(pretrained_model_path):
             # Make trainer model as the pretrained model
-            trainer.model = keras.models.load_model(pretrained_model_path)
+            trainer.model = tf.keras.models.load_model(pretrained_model_path)
 
             # Get zero shot trainer metrics
             val_metrics_zs = trainer.get_metrics(mode='validation')

@@ -1,8 +1,7 @@
 import numpy as np
-from tensorflow import keras
+import tensorflow as tf
 from tensorflow.keras.models import Model
 import tensorflow.keras.layers as layers
-from tensorflow.python.ops.numpy_ops.np_math_ops import average
 import tensorflow_addons as tfa
 import sklearn
 import pandas as pd
@@ -59,7 +58,7 @@ class Trainer:
         x = layers.Dense(self.num_classes, activation='softmax')(x)
 
         metrics = [tfa.metrics.F1Score(num_classes=self.num_classes)]
-        optimizer = keras.optimizers.Adam(lr=learning_rate)
+        optimizer = tf.keras.optimizers.Adam(lr=learning_rate)
 
         model = Model(inputs, x)
 
@@ -104,11 +103,15 @@ class Trainer:
         y_val = np.argmax(np.array(y_val), axis=-1)
         return y_val
 
+    def get_prediction_probabilities(self, generator):
+        """ Get all the model predictions """
+        return self.model.predict(generator, verbose=True)
+
     def get_predictions(self, generator):
         """ Get all the model predictions """
-        y_val_pred = self.model.predict(generator)
-        y_val_pred = np.argmax(y_val_pred, axis=-1)
-        return y_val_pred
+        y_pred = self.get_prediction_probabilities(generator)
+        y_pred = np.argmax(y_pred, axis=-1)
+        return y_pred
 
     def get_metrics(self, mode='validation'):
         """
@@ -117,7 +120,8 @@ class Trainer:
         """
         generator = self.get_generator_by_mode(mode)
         labels = self.get_labels(generator)
-        predictions = self.get_predictions(generator)
+        probabilites = self.get_prediction_probabilities(generator)
+        predictions = np.argmax(probabilites, axis=-1)
 
         f1_scores = sklearn.metrics.f1_score(labels, predictions, average=None)
         rec_scores = sklearn.metrics.precision_score(
@@ -129,13 +133,22 @@ class Trainer:
         ap_scores = []
         for single_label in sorted(np.unique(labels)):
             labels_l = labels == single_label
-            preds_l = predictions == single_label
+            probabilites_l = probabilites[:, single_label] 
             ap_score_l = sklearn.metrics.average_precision_score(
-                labels_l, preds_l, average='macro')
+                labels_l, probabilites_l, average='micro')
             ap_scores.append(ap_score_l)
-        
+
         classes = list(self.class_to_number.keys())
         metrics = pd.DataFrame({"Class": classes, "F1": f1_scores,
                                 "Precision": prec_scores, "Recall": rec_scores,
                                 "Average Precision": ap_scores})
+
+        if len(classes) > 2:
+            try:
+                average_scores = metrics[metrics['Class'] != 'other'].mean()
+                metrics = metrics.append(average_scores, ignore_index=True)
+                metrics.iloc[-1, 0] = 'Macro Average'
+            except Exception:
+                pass
+
         return metrics

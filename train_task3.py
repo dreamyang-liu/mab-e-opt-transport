@@ -1,6 +1,7 @@
 import os
+import argparse
 from copy import deepcopy
-from tensorflow import keras
+import tensorflow as tf
 
 from utils.load_data import load_mabe_data_task3
 from utils.dirs import create_dirs
@@ -94,7 +95,7 @@ def train_task3(train_data_path, results_dir, config, pretrained_model_path):
 
         if pretrained_model_path and os.path.exists(pretrained_model_path):
             # Make trainer model as the pretrained model
-            pretrained_model = keras.models.load_model(pretrained_model_path)
+            pretrained_model = tf.keras.models.load_model(pretrained_model_path)
 
             # Copy weights upto last layer
             copy_model_weights_except_last_layer(trainer.model, pretrained_model)
@@ -123,7 +124,7 @@ def train_task3(train_data_path, results_dir, config, pretrained_model_path):
         val_metrics = trainer.get_metrics(mode='validation')
 
         # Save the results
-        save_results(results_dir, f'task2_{behavior}',
+        save_results(results_dir, f'task3_{behavior}',
                      trainer.model, config,
                      train_metrics, val_metrics)
 

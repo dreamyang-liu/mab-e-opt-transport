@@ -132,7 +132,9 @@ class MABe_Data_Generator(keras.utils.Sequence):
         self.indices = np.arange(len(self.frame_indices))
 
     def __len__(self):
-        return len(self.indices) // self.batch_size
+        ct = len(self.indices) // self.batch_size
+        ct += int((len(self.indices) % self.batch_size) > 0)
+        return ct
 
     def get_X(self, data_index):
         """
@@ -161,7 +163,7 @@ class MABe_Data_Generator(keras.utils.Sequence):
         Augment sequences
             * Rotation - All frames in the sequence are rotated by the same angle
                 using the euler rotation matrix
-            * Shift - All frames in the sequence are shifted randomly 
+            * Shift - All frames in the sequence are shifted randomly
                 but by the same amount
         """
         # Rotate
@@ -178,7 +180,9 @@ class MABe_Data_Generator(keras.utils.Sequence):
     def __getitem__(self, index):
         batch_size = self.batch_size
         batch_indices = self.indices[
-            index*batch_size:(index+1)*batch_size]
+            index*batch_size:(index+1)*batch_size]  # List indexing overflow gets clipped
+
+        batch_size = len(batch_indices)  # For the case when list indexing is clipped
 
         X = np.empty((batch_size, *self.dim), self.X_dtype)
 

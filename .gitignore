@@ -118,4 +118,4 @@ data/
 results/*/*.h5
 
 results/.DS_Store
-results/.DS_Stor
+.DS_Store
