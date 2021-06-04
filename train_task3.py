@@ -131,7 +131,7 @@ def train_task3(train_data_path, results_dir, config,
             trainer.model.optimizer.learning_rate.assign(config.learning_rate)
 
         # Train model
-        # trainer.train(epochs=config.epochs, class_weight=class_weight)
+        trainer.train(epochs=config.epochs, class_weight=class_weight)
 
         # Get metrics
         train_metrics = trainer.get_metrics(mode='train')

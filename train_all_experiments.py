@@ -38,6 +38,7 @@ train_task1(task1_train_data_path, results_dir, config, task1_test_data_path)
 # # Task 1 Augmented - Will be used as pretrain model for task 2
 results_dir = 'results/task1_augmented'
 config = task1_augmented_config
+config.seed = seed
 train_task1(task1_train_data_path, results_dir, config, task1_test_data_path)
 
 # Task 2 Baseline
@@ -90,9 +91,18 @@ config = task1_causal_config
 config.seed = seed
 train_task1(task1_train_data_path, results_dir, config, task1_test_data_path)
 
+
+
 # Task 1 Baseline with 100% train data - 1D CNN
 results_dir = 'results/task1_train_full_data'
 config = task1_baseline_config
+config.seed = seed
+config.val_size = 0.0
+train_task1(task1_train_data_path, results_dir, config, task1_test_data_path)
+
+# # Task 1 Augmented with 100% train data
+results_dir = 'results/task1_augmented'
+config = task1_augmented_config
 config.seed = seed
 config.val_size = 0.0
 train_task1(task1_train_data_path, results_dir, config, task1_test_data_path)
@@ -114,3 +124,42 @@ config.seed = seed
 config.val_size = 0.0
 train_task3(task3_train_data_path, results_dir, config,
             pretrained_model_path, task3_test_data_path)
+
+# Task 1 Fully connected with 100% train data 
+train_data_path = 'data/task1_train_data.npy'
+results_dir = 'results/task1_fc'
+config = task1_fc_config
+config.seed = seed
+config.val_size = 0.0
+train_task1(task1_train_data_path, results_dir, config, task1_test_data_path)
+
+# Task 1 Attention with 100% train data 
+train_data_path = 'data/task1_train_data.npy'
+results_dir = 'results/task1_attention'
+config = task1_attention_config
+config.seed = seed
+config.val_size = 0.0
+train_task1(task1_train_data_path, results_dir, config, task1_test_data_path)
+
+# Task 1 LSTM with 100% train data 
+train_data_path = 'data/task1_train_data.npy'
+results_dir = 'results/task1_lstm'
+config = task1_lstm_config
+config.seed = seed
+config.val_size = 0.0
+train_task1(task1_train_data_path, results_dir, config, task1_test_data_path)
+
+# Task 1 Single Frame model with 100% train data 
+train_data_path = 'data/task1_train_data.npy'
+results_dir = 'results/task1_singleframe'
+config = task1_singleframe_config
+config.seed = seed
+config.val_size = 0.0
+train_task1(task1_train_data_path, results_dir, config, task1_test_data_path)
+
+# Task 1 Causal Model with 100% train data 
+results_dir = 'results/task1_causal'
+config = task1_causal_config
+config.seed = seed
+config.val_size = 0.0
+train_task1(task1_train_data_path, results_dir, config, task1_test_data_path)
