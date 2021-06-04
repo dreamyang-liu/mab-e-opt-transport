@@ -15,11 +15,13 @@ from configs.task2_baseline import task2_baseline_config
 from configs.task3_baseline import task3_baseline_config
 
 task1_train_data_path = 'data/task1_train_data.npy'
-task1_test_data_path = 'data/task1_test_data_converted.npy'
+task1_test_data_path = 'data/task1_test_ground_truth.npy'
 
 task2_train_data_path = 'data/task2_train_data.npy'
-task3_train_data_path = 'data/task3_train_data.npy'
+task2_test_data_path = 'data/task2_test_ground_truth.npy'
 
+task3_train_data_path = 'data/task3_train_data.npy'
+task3_test_data_path = 'data/task3_test_ground_truth.npy'
 
 # Parse for seed value
 parser = argparse.ArgumentParser()
@@ -43,14 +45,16 @@ results_dir = 'results/task2_baseline'
 pretrained_model_path = f'results/task1_augmented/task1_seed_{seed}_model.h5'
 config = task2_baseline_config
 config.seed = seed
-train_task2(task2_train_data_path, results_dir, config, pretrained_model_path)
+train_task2(task2_train_data_path, results_dir, config,
+            pretrained_model_path, task2_test_data_path)
 
 # Task 3 Baseline
 results_dir = 'results/task3_baseline'
 pretrained_model_path = f'results/task1_augmented/task1_seed_{seed}_model.h5'
 config = task3_baseline_config
 config.seed = seed
-train_task3(task3_train_data_path, results_dir, config, pretrained_model_path)
+train_task3(task3_train_data_path, results_dir, config,
+            pretrained_model_path, task3_test_data_path)
 
 # Task 1 Fully connected
 train_data_path = 'data/task1_train_data.npy'
@@ -85,3 +89,28 @@ results_dir = 'results/task1_causal'
 config = task1_causal_config
 config.seed = seed
 train_task1(task1_train_data_path, results_dir, config, task1_test_data_path)
+
+# Task 1 Baseline with 100% train data - 1D CNN
+results_dir = 'results/task1_train_full_data'
+config = task1_baseline_config
+config.seed = seed
+config.val_size = 0.0
+train_task1(task1_train_data_path, results_dir, config, task1_test_data_path)
+
+# Task 2 Baseline with 100% train data
+results_dir = 'results/task2_train_full_data'
+pretrained_model_path = f'results/task1_augmented/task1_seed_{seed}_model.h5'
+config = task2_baseline_config
+config.seed = seed
+config.val_size = 0.0
+train_task2(task2_train_data_path, results_dir, config,
+            pretrained_model_path, task2_test_data_path)
+
+# Task 3 Baseline with 100% train data
+results_dir = 'results/task3_train_full_data'
+pretrained_model_path = f'results/task1_augmented/task1_seed_{seed}_model.h5'
+config = task3_baseline_config
+config.seed = seed
+config.val_size = 0.0
+train_task3(task3_train_data_path, results_dir, config,
+            pretrained_model_path, task3_test_data_path)

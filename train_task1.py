@@ -43,6 +43,7 @@ def train_task1(train_data_path, results_dir, config, test_data_path,
                                       vocabulary=vocabulary,
                                       test_size=config.val_size,
                                       split_videos=config.split_videos)
+    val_data = None
     num_classes = len(vocabulary)
 
     # Calculate the input dimension based on past and future frames
@@ -130,7 +131,7 @@ if __name__ == '__main__':
 
     from configs.task1_baseline import task1_baseline_config
     config = task1_baseline_config
-
+    config.seed = seed
     pretrained_model_path = None
     if skip_training:
         model_path = f'{results_dir}/task1_seed_{seed}_model.h5'

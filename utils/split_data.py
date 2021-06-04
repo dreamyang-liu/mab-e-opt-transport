@@ -18,6 +18,10 @@ def split_data(orig_pose_dictionary, vocabulary, seed=2021,
     * By default, the "attack" behavior's presence is used to stratify the split
     * Optionally, the sequences may be split into half and treated as separate sequences
     """
+
+    if test_size == 0.0:
+        return orig_pose_dictionary, None
+
     number_to_class = {v: k for k, v in vocabulary.items()}
     if split_videos:
         pose_dictionary = {}

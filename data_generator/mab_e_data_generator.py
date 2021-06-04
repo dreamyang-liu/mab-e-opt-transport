@@ -21,10 +21,13 @@ def calculate_input_dim(feature_dim, architechture, past_frames, future_frames):
 
 
 def mabe_generator(data, augment, shuffle, kwargs):
-    return MABe_Data_Generator(data,
+    if data is not None:
+        return MABe_Data_Generator(data,
                                augment=augment,
                                shuffle=shuffle,
                                **kwargs)
+    else:
+        return None
 
 
 class MABe_Data_Generator(keras.utils.Sequence):

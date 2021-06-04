@@ -79,7 +79,7 @@ class Trainer:
             return
 
         self.model.fit(self.train_generator,
-                       validation_data=self.val_generator,
+                    #    validation_data=self.val_generator,
                        epochs=epochs,
                        class_weight=class_weight,
                        callbacks=callbacks)
@@ -119,6 +119,10 @@ class Trainer:
         "mode" can be set to use training or validation data
         """
         generator = self.get_generator_by_mode(mode)
+
+        if generator is None:
+            return None
+
         labels = self.get_labels(generator)
         probabilites = self.get_prediction_probabilities(generator)
         predictions = np.argmax(probabilites, axis=-1)
