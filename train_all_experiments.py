@@ -101,7 +101,7 @@ config.val_size = 0.0
 train_task1(task1_train_data_path, results_dir, config, task1_test_data_path)
 
 # # Task 1 Augmented with 100% train data
-results_dir = 'results/task1_augmented'
+results_dir = 'results/task1_augmented_train_full_data'
 config = task1_augmented_config
 config.seed = seed
 config.val_size = 0.0
@@ -127,7 +127,7 @@ train_task3(task3_train_data_path, results_dir, config,
 
 # Task 1 Fully connected with 100% train data 
 train_data_path = 'data/task1_train_data.npy'
-results_dir = 'results/task1_fc'
+results_dir = 'results/task1_fc_train_full_data'
 config = task1_fc_config
 config.seed = seed
 config.val_size = 0.0
@@ -135,7 +135,7 @@ train_task1(task1_train_data_path, results_dir, config, task1_test_data_path)
 
 # Task 1 Attention with 100% train data 
 train_data_path = 'data/task1_train_data.npy'
-results_dir = 'results/task1_attention'
+results_dir = 'results/task1_attention_train_full_data'
 config = task1_attention_config
 config.seed = seed
 config.val_size = 0.0
@@ -143,7 +143,7 @@ train_task1(task1_train_data_path, results_dir, config, task1_test_data_path)
 
 # Task 1 LSTM with 100% train data 
 train_data_path = 'data/task1_train_data.npy'
-results_dir = 'results/task1_lstm'
+results_dir = 'results/task1_lstm_train_full_data'
 config = task1_lstm_config
 config.seed = seed
 config.val_size = 0.0
@@ -151,14 +151,14 @@ train_task1(task1_train_data_path, results_dir, config, task1_test_data_path)
 
 # Task 1 Single Frame model with 100% train data 
 train_data_path = 'data/task1_train_data.npy'
-results_dir = 'results/task1_singleframe'
+results_dir = 'results/task1_singleframe_train_full_data'
 config = task1_singleframe_config
 config.seed = seed
 config.val_size = 0.0
 train_task1(task1_train_data_path, results_dir, config, task1_test_data_path)
 
 # Task 1 Causal Model with 100% train data 
-results_dir = 'results/task1_causal'
+results_dir = 'results/task1_causal_train_full_data'
 config = task1_causal_config
 config.seed = seed
 config.val_size = 0.0
