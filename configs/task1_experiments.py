@@ -16,12 +16,20 @@ task1_lstm_config = deepcopy(task1_baseline_config)
 task1_lstm_config.architecture = "lstm"
 task1_lstm_config.architecture_parameters = EasyDict({"lstm_size": 256})
 task1_lstm_config.layer_channels = (256, 128)
+task1_lstm_config.past_frames = 50
+task1_lstm_config.future_frames = 50
+task1_lstm_config.frame_gap = 1
+task1_lstm_config.epochs = 20
 task1_lstm_config = EasyDict(task1_lstm_config)
 
 # Attention config, uses multiple layers of self attention
 task1_attention_config = deepcopy(task1_baseline_config)
 task1_attention_config.architecture = "attention"
 task1_attention_config.layer_channels = (128, 64, 32)
+task1_attention_config.past_frames = 50
+task1_attention_config.future_frames = 50
+task1_attention_config.frame_gap = 1
+task1_attention_config.epochs = 20
 task1_attention_config = EasyDict(task1_attention_config)
 
 # Fully connected config, uses multiple fully connected layers
