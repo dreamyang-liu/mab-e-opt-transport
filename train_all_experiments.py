@@ -109,7 +109,7 @@ train_task1(task1_train_data_path, results_dir, config, task1_test_data_path)
 
 # Task 2 Baseline with 100% train data
 results_dir = 'results/task2_train_full_data'
-pretrained_model_path = f'results/task1_augmented/task1_seed_{seed}_model.h5'
+pretrained_model_path = f'results/task1_augmented_train_full_data/task1_seed_{seed}_model.h5'
 config = task2_baseline_config
 config.seed = seed
 config.val_size = 0.0
@@ -118,7 +118,7 @@ train_task2(task2_train_data_path, results_dir, config,
 
 # Task 3 Baseline with 100% train data
 results_dir = 'results/task3_train_full_data'
-pretrained_model_path = f'results/task1_augmented/task1_seed_{seed}_model.h5'
+pretrained_model_path = f'results/task1_augmented_train_full_data/task1_seed_{seed}_model.h5'
 config = task3_baseline_config
 config.seed = seed
 config.val_size = 0.0

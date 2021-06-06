@@ -104,11 +104,11 @@ def train_task2(train_data_path, results_dir, config,
             trainer.model = tf.keras.models.load_model(pretrained_model_path)
 
             # Get zero shot trainer metrics
-            taskname = f'task2_annotator{annotator_id}'
+            seed = config.seed
+            taskname = f'task2_annotator{annotator_id}_seed_{seed}'
             test_metrics_zs = trainer.get_metrics(mode='test')
             test_metrics_zs.to_csv(f'{results_dir}/{taskname}_test_results_zeroshot.csv',
                                    index=False)
-
             # Freeze all layers except last layer
             freeze_model_except_last_layer(trainer.model)
 
