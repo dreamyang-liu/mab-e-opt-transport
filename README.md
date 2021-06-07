@@ -1,11 +1,12 @@
-﻿# MABe Baselines
+# CalMS21 Dataset Baselines 
+## (developed for the Multi-Agent Behavior (MABe) Challenge)
 
 | ![Mabe tasks](images/task_structure.png) | 
 |:--:| 
-| A visual description of the tasks in the MABe Dataset |
+| A visual description of the tasks in the CalMS21 Dataset |
 
 
-Code for the baseline experiments in the MABe Dataset.
+Code for the baseline experiments in the CalMS21 Dataset.
 
 # Getting Started
 
@@ -16,18 +17,27 @@ git clone http://gitlab.aicrowd.com/aicrowd/research/mab-e/mab-e-baselines.git
 cd mab-e-baselines
 pip install -r requirements.txt
 ```
-## Obtaining the data
+## Quick Data Setup
 
-To get the data formatted to be compatible with this baseline visit [the challenge page](https://www.aicrowd.com/challenges/multi-agent-behavior-representation-modeling-measurement-and-applications)
+You can download the data at the CalMS21 data source: [https://data.caltech.edu/records/1991](https://data.caltech.edu/records/1991)
+The original dataset is formatted as json files.
+Note that the baseline code does not use the unlabeled videos set.
 
-You'll need to create a `data` folder and place the data files from the challenge there.
+Run the conversion script `calms21_convert_to_npy.py` provided in the [data repo](https://data.caltech.edu/records/1991) to convert the json files into the baseline npy format.
 
+The data folder should look like:
 ```
 data  - Create this folder in this directory
-├──task1_train_data.npy
-├──task2_train_data.npy
-└──task3_train_data.npy
+├──calms21_task1_train.npy
+├──calms21_task1_test.npy
+├──calms21_task2_train.npy
+├──calms21_task2_test.npy
+├──calms21_task3_train.npy
+└──calms21_task3_test.npy
 ```
+
+Alternatively, a version of the data, with behaviors and sequence names anonymized, was released for the MABe challenge.
+This data (train split) is available from the [AICrowd challenge page](https://www.aicrowd.com/challenges/multi-agent-behavior-representation-modeling-measurement-and-applications)
 
 # Running The Code
 
@@ -83,11 +93,11 @@ python train_task1_all_experiments.py
 |:--:| 
 | Different neural net architectures used for Task 1 experiments |
 
-## Dataset paper
+## CalMS21 Dataset paper
 
 [The Multi-Agent Behavior Dataset: Mouse Dyadic Social Interactions](https://arxiv.org/abs/2104.02710)
 
-## Challenge Page
+## MABe Challenge Page
 
 [AIcrowd - Multi-Agent Behavior: Representation, Modeling, Measurement, and Applications](https://www.aicrowd.com/challenges/multi-agent-behavior-representation-modeling-measurement-and-applications)
 
