@@ -115,8 +115,8 @@ def train_task1(train_data_path, results_dir, config, test_data_path,
 
 
 if __name__ == '__main__':
-    train_data_path = 'data/task1_train_data.npy'
-    test_data_path = 'data/task1_test_ground_truth.npy'
+    train_data_path = 'data/calms21_task1_train.npy'
+    test_data_path = 'data/calms21_task1_test.npy'
     results_dir = 'results/task1_baseline'
 
     parser = argparse.ArgumentParser()
