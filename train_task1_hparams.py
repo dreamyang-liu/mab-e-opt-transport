@@ -5,8 +5,8 @@ from train_task1 import train_task1
 
 from configs.task1_baseline import task1_baseline_config
 
-task1_train_data_path = 'data/task1_train_data.npy'
-task1_test_data_path = 'data/task1_test_data_converted.npy'
+task1_train_data_path = 'data/calms21_task1_train.npy'
+task1_test_data_path = 'data/calms21_task1_test.npy'
 
 parser = argparse.ArgumentParser()
 
