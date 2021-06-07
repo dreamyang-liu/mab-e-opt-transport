@@ -133,9 +133,9 @@ def train_task2(train_data_path, results_dir, config,
 
 
 if __name__ == '__main__':
-    train_data_path = 'data/task2_train_data.npy'
+    train_data_path = 'data/calms21_task2_train.npy'
+    test_data_path = 'data/calms21_task2_test.npy'
     results_dir = 'results/task2_baseline'
-    test_data_path = 'data/task2_test_ground_truth.npy'
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--seed', type=int, default=42, help='Seed value')
