@@ -1,5 +1,5 @@
 # CalMS21 Dataset Baselines 
-## (developed for the Multi-Agent Behavior (MABe) Challenge)
+This baseline was developed by AICrowd for the Multi-Agent Behavior (MABe) Challenge at CVPR 2021.
 
 | ![Mabe tasks](images/task_structure.png) | 
 |:--:| 
@@ -19,7 +19,7 @@ pip install -r requirements.txt
 ```
 ## Quick Data Setup
 
-You can download the data at the CalMS21 data source: [https://data.caltech.edu/records/1991](https://data.caltech.edu/records/1991)
+You can download the data at the CalMS21 data source: [https://data.caltech.edu/records/1991](https://data.caltech.edu/records/1991).
 The original dataset is formatted as json files.
 Note that the baseline code does not use the unlabeled videos set.
 
