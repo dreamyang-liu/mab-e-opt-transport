@@ -14,14 +14,14 @@ from configs.experiments import (task1_augmented_config,
 from configs.task2_baseline import task2_baseline_config
 from configs.task3_baseline import task3_baseline_config
 
-task1_train_data_path = 'data/task1_train_data.npy'
-task1_test_data_path = 'data/task1_test_ground_truth.npy'
+task1_train_data_path = 'data/calms21_task1_train.npy'
+task1_test_data_path = 'data/calms21_task1_test.npy'
 
-task2_train_data_path = 'data/task2_train_data.npy'
-task2_test_data_path = 'data/task2_test_ground_truth.npy'
+task2_train_data_path = 'data/calms21_task2_train.npy'
+task2_test_data_path = 'data/calms21_task2_test.npy'
 
-task3_train_data_path = 'data/task3_train_data.npy'
-task3_test_data_path = 'data/task3_test_ground_truth.npy'
+task3_train_data_path = 'data/calms21_task3_train.npy'
+task3_test_data_path = 'data/calms21_task3_test.npy'
 
 # Parse for seed value
 parser = argparse.ArgumentParser()
@@ -58,28 +58,24 @@ train_task3(task3_train_data_path, results_dir, config,
             pretrained_model_path, task3_test_data_path)
 
 # Task 1 Fully connected
-train_data_path = 'data/task1_train_data.npy'
 results_dir = 'results/task1_fc'
 config = task1_fc_config
 config.seed = seed
 train_task1(task1_train_data_path, results_dir, config, task1_test_data_path)
 
 # Task 1 Attention
-train_data_path = 'data/task1_train_data.npy'
 results_dir = 'results/task1_attention'
 config = task1_attention_config
 config.seed = seed
 train_task1(task1_train_data_path, results_dir, config, task1_test_data_path)
 
 # Task 1 LSTM
-train_data_path = 'data/task1_train_data.npy'
 results_dir = 'results/task1_lstm'
 config = task1_lstm_config
 config.seed = seed
 train_task1(task1_train_data_path, results_dir, config, task1_test_data_path)
 
 # Task 1 Single Frame model
-train_data_path = 'data/task1_train_data.npy'
 results_dir = 'results/task1_singleframe'
 config = task1_singleframe_config
 config.seed = seed
@@ -125,7 +121,6 @@ train_task3(task3_train_data_path, results_dir, config,
             pretrained_model_path, task3_test_data_path)
 
 # Task 1 Fully connected with 100% train data
-train_data_path = 'data/task1_train_data.npy'
 results_dir = 'results/task1_fc_train_full_data'
 config = task1_fc_config
 config.seed = seed
@@ -133,7 +128,6 @@ config.val_size = 0.0
 train_task1(task1_train_data_path, results_dir, config, task1_test_data_path)
 
 # Task 1 Attention with 100% train data
-train_data_path = 'data/task1_train_data.npy'
 results_dir = 'results/task1_attention_train_full_data'
 config = task1_attention_config
 config.seed = seed
@@ -141,7 +135,6 @@ config.val_size = 0.0
 train_task1(task1_train_data_path, results_dir, config, task1_test_data_path)
 
 # Task 1 LSTM with 100% train data
-train_data_path = 'data/task1_train_data.npy'
 results_dir = 'results/task1_lstm_train_full_data'
 config = task1_lstm_config
 config.seed = seed
@@ -149,7 +142,6 @@ config.val_size = 0.0
 train_task1(task1_train_data_path, results_dir, config, task1_test_data_path)
 
 # Task 1 Single Frame model with 100% train data
-train_data_path = 'data/task1_train_data.npy'
 results_dir = 'results/task1_singleframe_train_full_data'
 config = task1_singleframe_config
 config.seed = seed
