@@ -1,6 +1,11 @@
 ﻿# MABe Baselines
 
-Code for the baseline experiments in the MABe Challenge.
+| ![Mabe tasks](images/task_structure.png) | 
+|:--:| 
+| A visual description of the tasks in the MABe Dataset |
+
+
+Code for the baseline experiments in the MABe Dataset.
 
 # Getting Started
 
@@ -46,13 +51,14 @@ python train_task1_all_experiments.py
 ├── train_task1.py                - Entrypoint for training task1 baseline
 ├── train_task2.py                - Entrypoint for training task2 baseline
 ├── train_task3.py                - Entrypoint for training task3 baseline
-├── train_task3.py                - Entrypoint for training task1 experiments
+├── train_all_experiments.py      - Entrypoint for training all the runs including baselines
+├── train_task1_hparams.py        - For training task 1 with cli arguments for hyperparameters  
 │  
 ├── configs                       - Contains baseline and experiment configs
-│   ├── task1_baseline.py
-│   ├── task2_baseline.py
-│   ├── task3_baseline.py
-│   └── task1_experiments.py
+│   ├── task1_baseline.py         - 1D Convolution baseline
+│   ├── task2_baseline.py         - 1D Conolution on task 2 with pretrained model of task 1
+│   ├── task3_baseline.py         - 1D Conolution on task 3 with pretrained model of task 1
+│   └── experiments.py            - Training other architectures and experiments
 │
 ├── data_generator
 │   └── mab_e_data_generator.py   - Temporal window generator for training
@@ -72,6 +78,10 @@ python train_task1_all_experiments.py
 ```
 
 # Resources
+
+| ![Mabe baseline models](images/model_sketch.png) | 
+|:--:| 
+| Different neural net architectures used for Task 1 experiments |
 
 ## Dataset paper
 
