@@ -1,14 +1,14 @@
 from easydict import EasyDict
-from configs.task1_experiments import task1_augmented_config
+from configs.experiments import task1_augmented_config
 from copy import deepcopy
 
-class_weights = {"behavior-0": [1, 20],
-                 "behavior-1": [1, 50],
-                 "behavior-2": [1, 5],
-                 "behavior-3": [1, 3],
-                 "behavior-4": [1, 100],
-                 "behavior-5": [1, 20],
-                 "behavior-6": [1, 10],
+class_weights = {"approach": [1, 20],
+                 "disengaged": [1, 50],
+                 "groom": [1, 5],
+                 "intromission": [1, 3],
+                 "mount_attempt": [1, 100],
+                 "sniff_face": [1, 20],
+                 "whiterearing": [1, 10],
                  }
 
 # Task3 uses pretrained model from task1 and replaces the top layer

@@ -30,9 +30,12 @@ def train_task3(train_data_path, results_dir, config,
     for behavior in train_dataset:
 
         # Get individual behavior data
-        dataset = train_dataset[behavior]['sequences']
-        vocabulary = train_dataset[behavior]["vocabulary"]
-        test_data = test_dataset[behavior]['sequences']
+        dataset = train_dataset[behavior]
+
+        # Get any sequence key.
+        sequence_id = list(dataset.keys())[0]
+        vocabulary = dataset[sequence_id]['metadata']['vocab']
+        test_data = test_dataset[behavior]
 
         # Seed for reproducibilty
         seed_everything(config.seed)

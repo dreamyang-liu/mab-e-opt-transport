@@ -1,5 +1,5 @@
 from easydict import EasyDict
-from configs.task1_experiments import task1_augmented_config
+from configs.experiments import task1_augmented_config
 from copy import deepcopy
 
 # Task2 uses pretrained model with linear probe and then further fine tuning
