@@ -142,7 +142,7 @@ class Trainer:
                 labels_l, probabilites_l, average='micro')
             ap_scores.append(ap_score_l)
 
-        classes = list(self.class_to_number.keys())
+        classes = sorted(self.class_to_number, key=self.class_to_number.get)
         metrics = pd.DataFrame({"Class": classes, "F1": f1_scores,
                                 "Precision": prec_scores, "Recall": rec_scores,
                                 "Average Precision": ap_scores})

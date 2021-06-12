@@ -20,11 +20,12 @@ def calculate_input_dim(feature_dim, architechture, past_frames, future_frames):
     return input_dim
 
 
-def mabe_generator(data, augment, shuffle, kwargs):
+def mabe_generator(data, augment, shuffle, sequence_key, kwargs):
     if data is not None:
         return MABe_Data_Generator(data,
                                augment=augment,
                                shuffle=shuffle,
+                               sequence_key=sequence_key,
                                **kwargs)
     else:
         return None
@@ -46,7 +47,8 @@ class MABe_Data_Generator(keras.utils.Sequence):
                  past_frames=100,
                  future_frames=100,
                  frame_skip=1,
-                 shuffle=True):
+                 shuffle=True,
+                 sequence_key = 'keypoints'):
 
         self.batch_size = batch_size
         self.dim = input_dimensions
@@ -60,6 +62,8 @@ class MABe_Data_Generator(keras.utils.Sequence):
 
         self.shuffle = shuffle
         self.augment = augment
+
+        self.sequence_key = sequence_key
 
         # Raw Data Containers
         self.X = {}
@@ -93,8 +97,11 @@ class MABe_Data_Generator(keras.utils.Sequence):
         """ Prepare to pad frames """
         self.left_pad = self.past_frames * self.frame_skip
         self.right_pad = self.future_frames * self.frame_skip
-        self.pad_width = (self.left_pad, self.right_pad), (0,
-                                                           0), (0, 0), (0, 0)
+
+        if self.sequence_key == 'keypoints':
+            self.pad_width = (self.left_pad, self.right_pad), (0, 0), (0, 0), (0, 0)
+        else:
+            self.pad_width = (self.left_pad, self.right_pad), (0, 0)
 
     def classname_to_index(self, annotations_list):
         """
@@ -125,7 +132,7 @@ class MABe_Data_Generator(keras.utils.Sequence):
             self.frame_indices.extend(range(number_of_frames))
             # Add padded keypoints for each video key
             self.X[video_key] = np.pad(
-                self.pose_dict[video_key]['keypoints'], self.pad_width)
+                self.pose_dict[video_key][self.sequence_key], self.pad_width)
 
         self.y = np.array(self.action_annotations)
         # self.y = self.classname_to_index(self.action_annotations) # convert text labels to indices
@@ -161,7 +168,7 @@ class MABe_Data_Generator(keras.utils.Sequence):
             _X = self.augment_fn(_X)
         return _X
 
-    def augment_fn(self, x):
+    def augment_fn(self, to_augment):
         """ 
         Augment sequences
             * Rotation - All frames in the sequence are rotated by the same angle
@@ -169,6 +176,11 @@ class MABe_Data_Generator(keras.utils.Sequence):
             * Shift - All frames in the sequence are shifted randomly
                 but by the same amount
         """
+        if len(to_augment.shape) != 4:
+            x = to_augment[:, :28].reshape(-1, 2, 7, 2)
+        else:
+            x = to_augment
+
         # Rotate
         angle = (np.random.rand()-0.5) * (np.pi * 2)
         c, s = np.cos(angle), np.sin(angle)
@@ -178,6 +190,11 @@ class MABe_Data_Generator(keras.utils.Sequence):
         # Shift - All get shifted together
         shift = (np.random.rand(2)-0.5) * 2 * 0.25
         x = x + shift
+
+        if len(to_augment.shape) != 4:
+
+            x = np.concatenate([x.reshape(-1, 28), to_augment[:, 28:]], axis = -1)
+
         return x
 
     def __getitem__(self, index):

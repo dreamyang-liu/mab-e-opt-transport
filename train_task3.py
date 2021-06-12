@@ -18,7 +18,8 @@ from utils.model_utils import copy_model_weights_except_last_layer
 
 
 def train_task3(train_data_path, results_dir, config,
-                pretrained_model_path, test_data_path):
+                pretrained_model_path, test_data_path,
+                read_features = False):
 
     # Load the data
     train_dataset = load_mabe_data_task3(train_data_path)
@@ -26,6 +27,13 @@ def train_task3(train_data_path, results_dir, config,
 
     # Create directories if not present
     create_dirs([results_dir])
+
+    if not read_features:
+      sequence_key = 'keypoints'
+      feature_dim = (2, 7, 2)
+    else:
+      sequence_key = 'features'      
+      feature_dim = (60)    
 
     for behavior in train_dataset:
 
@@ -41,14 +49,13 @@ def train_task3(train_data_path, results_dir, config,
         seed_everything(config.seed)
 
         # Transpose last axis, used for augmentation and normalization
-        dataset = transpose_last_axis(deepcopy(dataset))
-        test_data = transpose_last_axis(deepcopy(test_data))
-        feature_dim = (2, 7, 2)
+        dataset = transpose_last_axis(deepcopy(dataset), sequence_key = sequence_key)
+        test_data = transpose_last_axis(deepcopy(test_data), sequence_key = sequence_key)
 
         # Normalize the x y coordinates
         if config.normalize:
-            dataset = normalize_data(dataset)
-            test_data = normalize_data(test_data)
+            dataset = normalize_data(dataset, sequence_key = sequence_key)
+            test_data = normalize_data(test_data, sequence_key = sequence_key)
 
         # Split the data
         train_data, val_data = split_data(dataset,
@@ -75,15 +82,18 @@ def train_task3(train_data_path, results_dir, config,
         train_generator = mabe_generator(train_data,
                                          augment=config.augment,
                                          shuffle=True,
+                                         sequence_key=sequence_key,                                            
                                          kwargs=common_kwargs)
         val_generator = mabe_generator(val_data,
                                        augment=False,
                                        shuffle=False,
+                                       sequence_key=sequence_key,   
                                        kwargs=common_kwargs)
 
         test_generator = mabe_generator(test_data,
                                         augment=False,
                                         shuffle=False,
+                                        sequence_key=sequence_key,                                           
                                         kwargs=common_kwargs)
 
         trainer = Trainer(train_generator=train_generator,
