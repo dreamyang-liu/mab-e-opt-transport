@@ -115,7 +115,7 @@ def train_task2(train_data_path, results_dir, config,
 
             # Get zero shot trainer metrics
             seed = config.seed
-            taskname = f'task2_annotator{annotator_id}_seed_{seed}'
+            taskname = f'task2_{annotator_id}_seed_{seed}'
             test_metrics_zs = trainer.get_metrics(mode='test')
             test_metrics_zs.to_csv(f'{results_dir}/{taskname}_test_results_zeroshot.csv',
                                    index=False)
@@ -137,7 +137,7 @@ def train_task2(train_data_path, results_dir, config,
         test_metrics = trainer.get_metrics(mode='test')
 
         # Save the results
-        save_results(results_dir, f'task2_annotator{annotator_id}',
+        save_results(results_dir, f'task2_{annotator_id}',
                      trainer.model, config,
                      train_metrics, val_metrics, test_metrics)
 
