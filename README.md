@@ -36,6 +36,8 @@ data  - Create this folder in this directory
 └──calms21_task3_test.npy
 ```
 
+To add task programming features, you can run the conversion script with `--parse_treba` to produce `.npy` files with features.
+
 Alternatively, a version of the data, with behaviors and sequence names anonymized, was released for the MABe challenge.
 This data (train split) is available from the [AICrowd challenge page](https://www.aicrowd.com/challenges/multi-agent-behavior-representation-modeling-measurement-and-applications)
 
@@ -52,7 +54,7 @@ python train_task3.py
 We also provide code for different experiments that vary the architecture and other parameters. These are available in `configs/task1_experiments.py` You can run them with the following command.
 
 ```shell
-python train_task1_all_experiments.py
+python train_all_experiments.py
 ```
 
 # Folder Structure
@@ -104,12 +106,10 @@ python train_task1_all_experiments.py
 # Cite
 
 ```
-@misc{sun2021multiagent,
-      title={The Multi-Agent Behavior Dataset: Mouse Dyadic Social Interactions}, 
-      author={Jennifer J. Sun and Tomomi Karigo and Dipam Chakraborty and Sharada P. Mohanty and David J. Anderson and Pietro Perona and Yisong Yue and Ann Kennedy},
-      year={2021},
-      eprint={2104.02710},
-      archivePrefix={arXiv},
-      primaryClass={cs.LG}
+@article{calms21,
+title={The Multi-Agent Behavior Dataset: Mouse Dyadic Social Interactions},
+author={Sun, Jennifer J and Karigo, Tomomi and Chakraborty, Dipam and Mohanty, Sharada P and Wild, Benjamin and Sun, Quan and Chen, Chen and Anderson, David J and Perona, Pietro and Yue, Yisong and Kennedy, Ann},
+journal={arXiv preprint arXiv:2104.02710},
+year={2021}
 }
 ```
