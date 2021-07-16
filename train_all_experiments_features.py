@@ -50,6 +50,8 @@ pretrained_model_path = f'results_features/task1_augmented_train_full_data/task1
 config = task2_baseline_config
 config.seed = seed
 config.val_size = 0.0
+config.linear_probe_epochs = 3
+config.epochs = 6
 train_task2(task2_train_data_path, results_dir, config,
             pretrained_model_path, task2_test_data_path,
             read_features = True)
