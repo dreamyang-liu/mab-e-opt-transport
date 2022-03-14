@@ -1,10 +1,10 @@
 import numpy as np
 import time
 import torch
-import argparse as args
+import argparse as args # This line will be replaced with argparser file in the future
 
 def optimize_L_sk(PS):
-    """
+    """ Optimize psuedo label with Sinkhorn Algorithm (CPU)
     :param PS: The prediction matrix, N x K
     """
     N, K = PS.shape
@@ -31,4 +31,4 @@ def optimize_L_sk(PS):
     argmaxes = np.nanargmax(PS, 0)  # size N
     newL = torch.LongTensor(argmaxes)
     selflabels = newL.cuda()
-    return cost, selflabels
+    return selflabels
