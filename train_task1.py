@@ -8,12 +8,13 @@ from utils.dirs import create_dirs
 from utils.preprocessing import normalize_data, transpose_last_axis
 from utils.split_data import split_data
 from utils.seeding import seed_everything
-from trainers.mab_e_trainer import Trainer
+from trainers.trainer_factory import TrainerFactory
 from data_generator.mab_e_data_generator import mabe_generator
 from data_generator.mab_e_data_generator import calculate_input_dim
 from utils.save_results import save_results
 
 
+Trainer = TrainerFactory.create_trainer('kmeans')
 def train_task1(train_data_path, results_dir, config, test_data_path,
                 pretrained_model_path=None, skip_training=False, read_features = False):
 
@@ -91,7 +92,8 @@ def train_task1(train_data_path, results_dir, config, test_data_path,
                       class_to_number=vocabulary,
                       num_classes=num_classes,
                       architecture=config.architecture,
-                      arch_params=config.architecture_parameters)
+                      arch_params=config.architecture_parameters,
+                      opt_label_period=config.opt_label_period)
 
     # In case of only using
     if skip_training and pretrained_model_path is not None:
@@ -124,8 +126,8 @@ def train_task1(train_data_path, results_dir, config, test_data_path,
 
 
 if __name__ == '__main__':
-    train_data_path = 'data/calms21_task1_train.npy'
-    test_data_path = 'data/calms21_task1_test.npy'
+    train_data_path = 'task1_npy/calms21_task1_train.npy'
+    test_data_path = 'task1_npy/calms21_task1_test.npy'
     results_dir = 'results/task1_baseline'
 
     parser = argparse.ArgumentParser()
