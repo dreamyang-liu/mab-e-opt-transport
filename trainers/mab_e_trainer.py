@@ -23,7 +23,8 @@ class Trainer:
                  class_to_number=None,
                  architecture="conv_1d",
                  test_generator=None,
-                 arch_params={}):
+                 arch_params={},
+                 opt_label_period=3):
 
         self.input_dim = input_dim
         self.num_classes = num_classes
@@ -36,6 +37,8 @@ class Trainer:
 
         self.architecture = architecture
         self.arch_params = arch_params
+
+        self.opt_label_period = opt_label_period
 
     def delete_model(self):
         self.model = None
