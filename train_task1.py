@@ -14,6 +14,9 @@ from data_generator.mab_e_data_generator import calculate_input_dim
 from utils.save_results import save_results
 from nlutils_mini.ParameterWatcher import ParameterWatcher
 
+physical_devices = tf.config.list_physical_devices('GPU')
+tf.config.experimental.set_memory_growth(physical_devices[0], True)
+
 watcher = ParameterWatcher("task1")
 Trainer = TrainerFactory.create_trainer('sinkhorn')
 def train_task1(train_data_path, results_dir, config, test_data_path,
