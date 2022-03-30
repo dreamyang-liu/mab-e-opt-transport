@@ -8,6 +8,7 @@ import numpy as np
 import time
 import sklearn.metrics as skm
 import itertools
+import copy
 
 class SinkhornTrainer(BaseTrainer):
 
@@ -63,11 +64,12 @@ class SinkhornTrainer(BaseTrainer):
         for pred in preds:
             accs.append(skm.accuracy_score(true_labels, pred))
             f1_scores.append(skm.f1_score(true_labels, pred, average='macro'))
-        with open(f"./validate_on_train_sinkhorn_{self.log_time}.txt", "a") as f:
-            idx = np.argmax(f1_scores)
-            self.optimal_permuation = list(itertools.permutations([0, 1, 2, 3], 4))[idx]
-            f.write(f"{accs[idx]} {f1_scores[idx]}\n")
-        print("validate_on_train finished...")
+        # with open(f"./validate_on_train_sinkhorn_{self.log_time}.txt", "a") as f:
+        idx = np.argmax(f1_scores)
+        self.optimal_permuation = list(itertools.permutations([0, 1, 2, 3], 4))[idx]
+        return accs[idx], f1_scores[idx]
+        #     f.write(f"{accs[idx]} {f1_scores[idx]}\n")
+        # print("validate_on_train finished...")
     
     def map_labels(self, permutation, prediction):
         """ Map the labels to the permutation """
@@ -93,19 +95,32 @@ class SinkhornTrainer(BaseTrainer):
         f1_scores = []
         accs.append(skm.accuracy_score(true_labels, preds))
         f1_scores.append(skm.f1_score(true_labels, preds, average='macro'))
-        with open(f"./validate_on_test_sinkhorn_{self.log_time}.txt", "a") as f:
-            idx = np.argmax(f1_scores)
-            f.write(f"{accs[idx]} {f1_scores[idx]}\n")
-        print("validate_on_test finished...")
 
-    def train(self, epochs=20, class_weight=None, callbacks=[]):
+        idx = np.argmax(f1_scores)
+        return accs[idx], f1_scores[idx]
+        
+
+    def train(self, epochs=20, class_weight=None, callbacks=[], watcher=None):
         """ Train the model for given epochs """
         if self.model is None:
             print("Please Call trainer.initialize_model first")
             return
-        
-        for i in range(epochs):
+        f1_test_scores = []
+        f1_train_scores = []
+        accuracy_train_scores = []
+        accuracy_test_scores = []
+        for _ in range(epochs):
             self.optimize_label_assignment()
             self.model.fit(self.train_generator, epochs=1)
-            self.validate_on_train()
-            self.validate_on_test()
+            train_acc, train_f1 = self.validate_on_train()
+            test_acc, test_f1 = self.validate_on_test()
+            accuracy_train_scores.append(train_acc)
+            accuracy_test_scores.append(test_acc)
+            f1_train_scores.append(train_f1)
+            f1_test_scores.append(test_f1)
+            watcher.insert_batch_results([f1_test_scores, f1_train_scores, accuracy_train_scores, accuracy_test_scores])
+            f1_max_test = copy.deepcopy(max(f1_test_scores))
+            f1_max_train = copy.deepcopy(max(f1_train_scores))
+            accuracy_max_test = copy.deepcopy(max(accuracy_test_scores))
+            accuracy_max_train = copy.deepcopy(max(accuracy_train_scores))
+            watcher.insert_batch_results([f1_max_test, f1_max_train, accuracy_max_test, accuracy_max_train])

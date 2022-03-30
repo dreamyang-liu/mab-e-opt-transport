@@ -56,12 +56,15 @@ def optimize_L_sk_gpu(args, PS):
 
 def modified_optimize_L_sk(PS):
     N, K = PS.shape
-    _K_dist = np.array([0.627, 0.289, 0.056, 0.028]).reshape(-1, 1)
+    # import pdb; pdb.set_trace()
+    marginals_argsort = np.argsort(PS.sum(0))
+    _K_dist = np.array([0.627, 0.289, 0.056, 0.028])
     beta = np.ones((N, 1), dtype=np.float64) / N
-    PS **= (0.5 * LAMBDA)
+    PS **= (LAMBDA)
     # r = 1./_K_dist
     # r /= r.sum()
-    r = _K_dist
+    _K_dist[marginals_argsort] = np.sort(_K_dist)
+    r = _K_dist.reshape(-1, 1)
 
     c = 1./N
     err = 1e6

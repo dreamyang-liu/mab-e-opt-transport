@@ -12,8 +12,9 @@ from trainers.trainer_factory import TrainerFactory
 from data_generator.mab_e_data_generator import mabe_generator
 from data_generator.mab_e_data_generator import calculate_input_dim
 from utils.save_results import save_results
+from nlutils_mini.ParameterWatcher import ParameterWatcher
 
-
+watcher = ParameterWatcher("task1")
 Trainer = TrainerFactory.create_trainer('sinkhorn')
 def train_task1(train_data_path, results_dir, config, test_data_path,
                 pretrained_model_path=None, skip_training=False, read_features = False):
@@ -22,6 +23,8 @@ def train_task1(train_data_path, results_dir, config, test_data_path,
     dataset, vocabulary = load_mabe_data_task1(train_data_path)
     test_data, _ = load_mabe_data_task1(test_data_path)
 
+    # watcher.set_parameter_by_argparser(config)
+    watcher.insert_batch_parameters([config])
     # Create directories if not present
     create_dirs([results_dir])
 
@@ -112,17 +115,17 @@ def train_task1(train_data_path, results_dir, config, test_data_path,
         trainer.model.summary()
 
         # Train model
-        trainer.train(epochs=config.epochs)
+        trainer.train(epochs=config.epochs, watcher=watcher)
 
     # Get metrics
-    train_metrics = trainer.get_metrics(mode='train')
-    val_metrics = trainer.get_metrics(mode='validation')
-    test_metrics = trainer.get_metrics(mode='test')
+    # train_metrics = trainer.get_metrics(mode='train')
+    # val_metrics = trainer.get_metrics(mode='validation')
+    # test_metrics = trainer.get_metrics(mode='test')
 
-    # Save the results
-    save_results(results_dir, 'task1',
-                 trainer.model, config,
-                 train_metrics, val_metrics, test_metrics)
+    # # Save the results
+    # save_results(results_dir, 'task1',
+    #              trainer.model, config,
+    #              train_metrics, val_metrics, test_metrics)
 
 
 if __name__ == '__main__':
