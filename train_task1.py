@@ -14,7 +14,7 @@ from data_generator.mab_e_data_generator import calculate_input_dim
 from utils.save_results import save_results
 
 
-Trainer = TrainerFactory.create_trainer('kmeans')
+Trainer = TrainerFactory.create_trainer('sinkhorn')
 def train_task1(train_data_path, results_dir, config, test_data_path,
                 pretrained_model_path=None, skip_training=False, read_features = False):
 

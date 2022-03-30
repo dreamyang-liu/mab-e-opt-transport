@@ -10,7 +10,7 @@ def save_results(results_dir, taskname, model, config,
 
     prefix = f'{taskname}_{mod}seed_{seed}'
 
-    model.save(f'{results_dir}/{prefix}_model.h5')
+    # model.save(f'{results_dir}/{prefix}_model.h5')
     np.save(f"{results_dir}/{prefix}_config", config)
 
     if val_metrics is not None:
