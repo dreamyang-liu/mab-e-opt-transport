@@ -16,6 +16,6 @@ task1_baseline_config = {"seed": 42,
                          "layer_channels": (128, 64, 32),
                          "epochs": 800,
                          "augment": False,
-                         "opt_label_period": 2}
+                         "opt_label_period": 1}
 
 task1_baseline_config = EasyDict(task1_baseline_config)
