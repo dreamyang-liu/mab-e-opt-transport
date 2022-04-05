@@ -17,6 +17,7 @@ task1_baseline_config = {"seed": 42,
                          "epochs": 800,
                          "augment": False,
                          "opt_label_period": 1,
-                         "gpu_id": "4"}
+                         "gpu_id": "4",
+                         "label_method": "sinkhorn"}
 
 task1_baseline_config = EasyDict(task1_baseline_config)
