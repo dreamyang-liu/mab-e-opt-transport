@@ -121,3 +121,9 @@ results/.DS_Store
 .DS_Store
 *.npy
 *.sh
+*.json
+*.txt
+*.ipynb
+*.png
+*.yml
+*.csv

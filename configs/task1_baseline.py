@@ -11,11 +11,12 @@ task1_baseline_config = {"seed": 42,
                          "architecture": "conv_1D",
                          "architecture_parameters": EasyDict({"conv_size": 5}),
                          "batch_size": 128,
-                         "learning_rate": 1e-3,
+                         "learning_rate": 2e-4,
                          "dropout_rate": 0.5,
                          "layer_channels": (128, 64, 32),
                          "epochs": 800,
                          "augment": False,
-                         "opt_label_period": 1}
+                         "opt_label_period": 1,
+                         "gpu_id": "4"}
 
 task1_baseline_config = EasyDict(task1_baseline_config)

@@ -14,20 +14,22 @@ from data_generator.mab_e_data_generator import calculate_input_dim
 from utils.save_results import save_results
 from nlutils_mini.ParameterWatcher import ParameterWatcher
 
-physical_devices = tf.config.list_physical_devices('GPU')
-tf.config.experimental.set_memory_growth(physical_devices[0], True)
-
-watcher = ParameterWatcher("task1")
-Trainer = TrainerFactory.create_trainer('sinkhorn')
 def train_task1(train_data_path, results_dir, config, test_data_path,
                 pretrained_model_path=None, skip_training=False, read_features = False):
-
+    print(config)
+    watcher = ParameterWatcher("task1")
+    label_method = config.label_method
+    Trainer = TrainerFactory.create_trainer(label_method)
+    os.environ["CUDA_VISIBLE_DEVICES"] = config.gpu_id
+    physical_devices = tf.config.list_physical_devices('GPU')
+    tf.config.experimental.set_memory_growth(physical_devices[0], True)
     # Load the data
     dataset, vocabulary = load_mabe_data_task1(train_data_path)
     test_data, _ = load_mabe_data_task1(test_data_path)
 
     # watcher.set_parameter_by_argparser(config)
-    watcher.insert_batch_parameters([config])
+    watcher.set_parameters_by_dict(config)
+    watcher.insert_batch_parameters([label_method])
     # Create directories if not present
     create_dirs([results_dir])
 
