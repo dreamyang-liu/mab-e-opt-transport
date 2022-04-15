@@ -1,6 +1,7 @@
 from .mab_e_trainer import Trainer as BaseTrainer
 from models.Models import Conv1d_Model
 from tqdm import tqdm, trange
+from .pseudo_label_generator.kmeans import KMeansLabelGenerator
 from .pseudo_label_generator.sinkhorn_utils import SinkhornLabelGenerator
 import tensorflow as tf
 import tensorflow_addons as tfa
@@ -10,7 +11,7 @@ import sklearn.metrics as skm
 import itertools
 import copy
 
-class SinkhornTrainer(BaseTrainer):
+class KSTrainer(BaseTrainer):
 
 
     def initialize_model(self, layer_channels=(512, 256), dropout_rate=0., learning_rate=1e-3, conv_size=5):
@@ -28,7 +29,7 @@ class SinkhornTrainer(BaseTrainer):
         model.compile(optimizer=self.optimizer, loss=tf.keras.losses.categorical_crossentropy, metrics=metrics)
         self.model = model
 
-    def optimize_label_assignment(self):
+    def optimize_label_assignment_sinkhorn(self):
         PSs = []
         for x, _ in self.train_generator:
             PS = self.model(x)
@@ -36,6 +37,16 @@ class SinkhornTrainer(BaseTrainer):
         PSs =  tf.concat(PSs, axis=0).cpu()
         clf = SinkhornLabelGenerator()
         labels = clf.fit(PSs)
+        self.train_generator.update_y(labels)
+    
+    def optimize_label_assignment_kmeans(self):
+        feats = []
+        for x, _ in self.train_generator:
+            feat = self.model.compute_features(x)
+            feats.append(feat)
+        feats =  tf.concat(feats, axis=0).cpu()
+        clf = KMeansLabelGenerator(self.num_classes, use_pca=True, n_components=256)
+        labels = clf.fit(feats)
         self.train_generator.update_y(labels)
     
     def generate_label_maps(self, pred):
@@ -110,8 +121,10 @@ class SinkhornTrainer(BaseTrainer):
         accuracy_train_scores = []
         accuracy_test_scores = []
         for ep in range(epochs):
-            if (ep + 1) % self.opt_label_period == 0 or ep == 0:
-                self.optimize_label_assignment()
+            if ep >= 50:
+                self.optimize_label_assignment_sinkhorn()
+            else:
+                self.optimize_label_assignment_kmeans()
             self.model.fit(self.train_generator, epochs=1)
             train_acc, train_f1 = self.validate_on_train()
             test_acc, test_f1 = self.validate_on_test()
@@ -125,4 +138,3 @@ class SinkhornTrainer(BaseTrainer):
             accuracy_max_test = copy.deepcopy(max(accuracy_test_scores))
             accuracy_max_train = copy.deepcopy(max(accuracy_train_scores))
             watcher.insert_batch_results([f1_max_test, f1_max_train, accuracy_max_test, accuracy_max_train])
-        self.gather_features_labels(tag='sinkhorn')

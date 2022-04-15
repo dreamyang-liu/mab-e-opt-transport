@@ -1,3 +1,4 @@
+from copyreg import pickle
 import numpy as np
 import tensorflow as tf
 from tensorflow.keras.models import Model
@@ -86,6 +87,19 @@ class Trainer:
                        epochs=epochs,
                        class_weight=class_weight,
                        callbacks=callbacks)
+    
+    def gather_features_labels(self, tag):
+        feats = []
+        for x, _ in self.train_generator:
+            feat = self.model.compute_features(x)
+            feats.append(feat)
+        feats =  tf.concat(feats, axis=0).cpu().numpy()
+        L = {
+            'features': feats,
+            'pseudo_labels': self.train_generator.get_current_labels(),
+            'real_labels': self.train_generator.get_true_labels(),
+        }
+        np.save(f'{tag}_features_labels.npy', L)
 
     def get_generator_by_mode(self, mode='validation'):
         """ Select the generator - Train, Validation or Test"""

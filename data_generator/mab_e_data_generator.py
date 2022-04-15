@@ -144,6 +144,9 @@ class MABe_Data_Generator(keras.utils.Sequence):
     
     def get_true_labels(self):
         return self.y_raw[self.indices]
+    
+    def get_current_labels(self):
+        return self.y[self.indices]
 
     def __len__(self):
         ct = len(self.indices) // self.batch_size

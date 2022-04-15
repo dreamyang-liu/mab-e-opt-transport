@@ -3,6 +3,7 @@
 from trainers.mab_e_trainer import Trainer as mabe_trainer
 from trainers.kmeans_trainer import KMeansTrainer as kmeans_trainer
 from trainers.sinkhorn_trainer import SinkhornTrainer as sinkhorn_trainer
+from trainers.ks_trainer import KSTrainer as ks_trainer
 
 class TrainerFactory:
     
@@ -14,3 +15,5 @@ class TrainerFactory:
             return kmeans_trainer
         elif type == 'sinkhorn':
             return sinkhorn_trainer
+        elif type == 'ks':
+            return ks_trainer
