@@ -100,7 +100,7 @@ class ContrasiveLearningDataset(Dataset):
         self.label_shadow = label_shadow
 
         self.transform = transform
-        self.idxs = torch.arange(len(sequences))
+        self.idxs = torch.arange(feat.shape[0])
 
     def __len__(self):
         return self.feat.shape[0].item()
@@ -128,7 +128,7 @@ class TemporalDataset(Dataset):
         self.label = label
 
         self.transform = transform
-        self.idxs = torch.arange(len(sequences))
+        self.idxs = torch.arange(feat.shape[0])
 
     def __len__(self):
         return self.feat.shape[0].item()
@@ -149,6 +149,4 @@ class TemporalDataset(Dataset):
 
 
 if __name__ == "__main__":
-    pose_dict_path = "../data/train.npy"
-    sequences = DataUtils.read_npy(pose_dict_path)
-    DataUtils.build_temporal_sequence(sequences, 10, 10, 1)
+    pass
