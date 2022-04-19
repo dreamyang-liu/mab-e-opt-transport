@@ -1,6 +1,0 @@
-tensorflow
-numpy
-pandas
-tensorflow-addons
-scikit-learn
-easydict
