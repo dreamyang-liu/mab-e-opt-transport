@@ -135,11 +135,18 @@ class MABe_Data_Generator(keras.utils.Sequence):
                 self.pose_dict[video_key][self.sequence_key], self.pad_width)
 
         self.y = np.array(self.action_annotations)
+        self.y_raw = np.array(self.action_annotations)
         # self.y = self.classname_to_index(self.action_annotations) # convert text labels to indices
         self.X_dtype = self.X[video_key].dtype  # Store D_types of X
 
         # generate a global index list for all data points
         self.indices = np.arange(len(self.frame_indices))
+    
+    def get_true_labels(self):
+        return self.y_raw[self.indices]
+    
+    def get_current_labels(self):
+        return self.y[self.indices]
 
     def __len__(self):
         ct = len(self.indices) // self.batch_size
@@ -196,7 +203,11 @@ class MABe_Data_Generator(keras.utils.Sequence):
             x = np.concatenate([x.reshape(-1, 28), to_augment[:, 28:]], axis = -1)
 
         return x
-
+    
+    def update_y(self, y):
+        print("update y")
+        self.y[self.indices] = y
+    
     def __getitem__(self, index):
         batch_size = self.batch_size
         batch_indices = self.indices[

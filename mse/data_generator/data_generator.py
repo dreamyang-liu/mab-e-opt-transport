@@ -1,3 +1,4 @@
+from builtins import breakpoint
 import numpy as np
 import torch
 from torch.utils.data import Dataset, DataLoader
@@ -90,23 +91,64 @@ class DataUtils:
         feats = torch.cat(feats, dim=0)
         labels = torch.cat(labels, dim=0)
         return feats, labels
+    
+    @staticmethod
+    def augment_fn(to_augment):
+        """ 
+        Augment sequences
+            * Rotation - All frames in the sequence are rotated by the same angle
+                using the euler rotation matrix
+            * Shift - All frames in the sequence are shifted randomly
+                but by the same amount
+        """
+        if len(to_augment.shape) != 4:
+            x = to_augment[:, :28].reshape(-1, 2, 7, 2)
+        else:
+            x = to_augment
+
+        # Rotate
+        angle = (np.random.rand()-0.5) * (np.pi * 2)
+        c, s = np.cos(angle), np.sin(angle)
+        rot = np.array([[c, -s], [s, c]])
+        x = np.dot(x, rot)
+
+        # Shift - All get shifted together
+        shift = (np.random.rand(2)-0.5) * 2 * 0.25
+        x = x + shift
+
+        if len(to_augment.shape) != 4:
+
+            x = np.concatenate([x.reshape(-1, 28), to_augment[:, 28:]], axis = -1)
+
+        return x
 
 class ContrasiveLearningDataset(Dataset):
-    def __init__(self, feat, feat_shadow, label, label_shadow, transform=None):
+    def __init__(self, feat, label, feat_shadow, label_shadow, args, transform=None):
         self.feat = feat
         self.label = label
 
         self.feat_shadow = feat_shadow
         self.label_shadow = label_shadow
 
+        self.args = args
+
         self.transform = transform
         self.idxs = torch.arange(feat.shape[0])
+        
+        self.prepare_batch_idxs()
+    
+    def prepare_batch_idxs(self):
+        self.batch_idxs = []
+        for i in range(0, self.idxs.shape[0], self.args.batch_size):
+            self.batch_idxs.append([i, min(i + self.args.batch_size, self.idxs.shape[0])])
+        self.batch_idxs = torch.tensor(self.batch_idxs)
+        print(self.batch_idxs.shape)
 
     def __len__(self):
-        return self.feat.shape[0].item()
+        return self.batch_idxs.shape[0]
 
     def __getitem__(self, idx):
-        idx = self.idxs[idx]
+        idx = self.idxs[self.batch_idxs[idx][0]:self.batch_idxs[idx][1]]
 
         feat = self.feat[idx]
         label = self.label[idx]
@@ -115,6 +157,18 @@ class ContrasiveLearningDataset(Dataset):
         label_shadow = self.label_shadow[idx]
 
         return (feat, label), (feat_shadow, label_shadow)
+    
+    def get_input_dim(self):
+        return self.feat.shape[1:]
+
+    def get_class_dim(self):
+        return self.label.unique().shape[0]
+    
+    def optimize(self, optimizer):
+        if optimizer is None:
+            print("Optimizer is not set, use default label")
+        else:
+            pass
     
     def randomize(self):
         np.random.shuffle(self.idxs)
