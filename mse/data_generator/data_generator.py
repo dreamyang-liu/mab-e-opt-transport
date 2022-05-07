@@ -93,6 +93,28 @@ class DataUtils:
         return feats, labels
     
     @staticmethod
+    def build_nontemporal_single_sequence(sequence):
+        sequence_feature = sequence['feat']
+        sequence_label = sequence['label']
+
+        return type('data', (object, ), {
+            'feat': sequence_feature,
+            'label': sequence_label,
+        })
+    
+    @staticmethod
+    def build_nontemporal_sequence(sequences):
+        feats = []
+        labels = []
+        for _, sequence in sequences.items():
+            sequence_nontemporal = DataUtils.build_nontemporal_single_sequence(sequence)
+            feats.append(sequence_nontemporal.feat)
+            labels.append(sequence_nontemporal.label)
+        feats = torch.cat(feats, dim=0)
+        labels = torch.cat(labels, dim=0)
+        return feats, labels
+    
+    @staticmethod
     def augment_fn(to_augment):
         """ 
         Augment sequences
@@ -123,17 +145,15 @@ class DataUtils:
         return x
 
 class ContrasiveLearningDataset(Dataset):
-    def __init__(self, feat, label, feat_shadow, label_shadow, args, transform=None):
-        self.feat = feat
-        self.label = label
-
-        self.feat_shadow = feat_shadow
-        self.label_shadow = label_shadow
-
+    def __init__(self, path, args, transform=None):
         self.args = args
+        data = DataUtils.read_npy(path, flatten=self.args.flatten)
+        data = DataUtils.build_contrasive_learning(data)
+        self.feat, self.label, self.feat_shadow, self.label_shadow = data
+
 
         self.transform = transform
-        self.idxs = torch.arange(feat.shape[0])
+        self.idxs = torch.arange(self.feat.shape[0])
         
         self.prepare_batch_idxs()
     
@@ -142,7 +162,6 @@ class ContrasiveLearningDataset(Dataset):
         for i in range(0, self.idxs.shape[0], self.args.batch_size):
             self.batch_idxs.append([i, min(i + self.args.batch_size, self.idxs.shape[0])])
         self.batch_idxs = torch.tensor(self.batch_idxs)
-        print(self.batch_idxs.shape)
 
     def __len__(self):
         return self.batch_idxs.shape[0]
@@ -169,6 +188,46 @@ class ContrasiveLearningDataset(Dataset):
             print("Optimizer is not set, use default label")
         else:
             pass
+    
+    def randomize(self):
+        np.random.shuffle(self.idxs)
+    
+    def reset(self):
+        self.idxs = torch.arange(len(self.feat))
+
+class NonTemporalDataset(Dataset):
+
+    def __init__(self, path, args, transform=None):
+        self.path = path
+        self.args = args
+        self.transform = transform
+        data = DataUtils.read_npy(path, flatten=self.args.flatten)
+        self.feat, self.label = DataUtils.build_nontemporal_sequence(data)
+        self.idxs = torch.arange(self.feat.shape[0])
+        self.prepare_batch_idxs()
+    
+    def prepare_batch_idxs(self):
+        self.batch_idxs = []
+        for i in range(0, self.idxs.shape[0], self.args.batch_size):
+            self.batch_idxs.append([i, min(i + self.args.batch_size, self.idxs.shape[0])])
+        self.batch_idxs = torch.tensor(self.batch_idxs)
+
+    def __len__(self):
+        return self.batch_idxs.shape[0]
+    
+    def __getitem__(self, idx):
+        idx = self.idxs[self.batch_idxs[idx][0]:self.batch_idxs[idx][1]]
+
+        feat = self.feat[idx]
+        label = self.label[idx]
+
+        return feat, label
+    
+    def get_input_dim(self):
+        return self.feat.shape[1:]
+
+    def get_class_dim(self):
+        return self.label.unique().shape[0]
     
     def randomize(self):
         np.random.shuffle(self.idxs)

@@ -13,12 +13,18 @@ parser.add_argument('--sinkhorn_device', type=int, default=2)
 parser.add_argument('--save_dir', type=str, default='checkpoints')
 parser.add_argument('-sc', '--save_checkpoint', action='store_true')
 
+# data arguments
+parser.add_argument('--data_dir', type=str, default='data')
+parser.add_argument('-f','--flatten', action='store_true')
+
 # training arguments
 parser.add_argument('-lop', '--label_optimize_period', type=int, default=1)
 parser.add_argument('--epoch', type=int, default=10)
 parser.add_argument('--batch_size', type=int, default=32)
 parser.add_argument('--lr', type=float, default=0.001)
 parser.add_argument('--weight_decay', type=float, default=0.0005)
+
+parser.add_argument('--warmup_epoch', type=int, default=10)
 
 # sinkhorn arguments
 parser.add_argument('--num_clusters', type=int, default=4)
