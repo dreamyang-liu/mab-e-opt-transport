@@ -31,6 +31,7 @@ parser.add_argument('--num_clusters', type=int, default=4)
 parser.add_argument('--num_head', type=int, default=1)
 parser.add_argument('--lamb', type=float, default=25)
 parser.add_argument('--dist', type=str, default='gauss', choices=['gauss', 'uniform'])
+parser.add_argument('--gauss_sd', type=float, default=0.1)
 
 # eval arguments
 parser.add_argument('-hi', '--hierarchical', action='store_true')

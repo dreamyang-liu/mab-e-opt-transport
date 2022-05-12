@@ -3,6 +3,13 @@ import torch
 import numpy as np
 import time
 
+class PseudoOptimizer(object):
+
+    def __init__(self, args):
+        self.args = args
+    
+    def optimize(self, payload):
+        return payload
 class SinkhornLabelOptimizer(object):
 
     def __init__(self, args):
@@ -11,13 +18,14 @@ class SinkhornLabelOptimizer(object):
     def optimize_single(self, PS):
         assert len(PS.shape) == 2, "PS should be 2D"
         PS = PS.to(self.args.sinkhorn_device)
+        PS = PS.double()
+        N, K = PS.shape
         if self.args.dist == 'gauss':
             _K_dist = (torch.randn(size=(K, 1), dtype=torch.float64, device=self.args.sinkhorn_device) * self.args.gauss_sd + 1) * N / K
         elif self.args.dist == 'uniform':
             _K_dist = torch.ones(size=(K, 1), dtype=torch.float64, device=self.args.sinkhorn_device) * N / K
         else:
             raise NotImplementedError(f"Distribution {self.args.dist} not implemented")
-        N, K = PS.shape
         beta = torch.ones((N, 1), dtype=torch.float64, device=self.args.sinkhorn_device) / N
         PS.pow_(0.5 * self.args.lamb)
         r = 1./_K_dist
@@ -43,9 +51,12 @@ class SinkhornLabelOptimizer(object):
         return newL
     
     def optimize(self, PS_list):
-        L = []
-        for PS in PS_list:
-            L.append(self.optimize_single(PS))
+        if isinstance(PS_list, list):
+            L = []
+            for PS in PS_list:
+                L.append(self.optimize_single(PS))
+        else:
+            L = self.optimize_single(PS_list)
         return L
 
 def optimize_L_sk_gpu(args, PS, hc):

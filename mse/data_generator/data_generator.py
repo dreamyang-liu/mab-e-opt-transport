@@ -1,7 +1,10 @@
 from builtins import breakpoint
 import numpy as np
+import copy
 import torch
 from torch.utils.data import Dataset, DataLoader
+from abc import ABCMeta, abstractmethod
+
 
 
 
@@ -144,7 +147,12 @@ class DataUtils:
 
         return x
 
-class ContrasiveLearningDataset(Dataset):
+class MyDataset(Dataset):
+    
+    @abstractmethod
+    def optimize(self, optimizer):
+        pass
+class ContrasiveLearningDataset(MyDataset):
     def __init__(self, path, args, transform=None):
         self.args = args
         data = DataUtils.read_npy(path, flatten=self.args.flatten)
@@ -183,11 +191,8 @@ class ContrasiveLearningDataset(Dataset):
     def get_class_dim(self):
         return self.label.unique().shape[0]
     
-    def optimize(self, optimizer):
-        if optimizer is None:
-            print("Optimizer is not set, use default label")
-        else:
-            pass
+    def optimize(self, optimizer=None):
+        raise NotImplementedError("optimize method is not implemented")
     
     def randomize(self):
         np.random.shuffle(self.idxs)
@@ -195,7 +200,7 @@ class ContrasiveLearningDataset(Dataset):
     def reset(self):
         self.idxs = torch.arange(len(self.feat))
 
-class NonTemporalDataset(Dataset):
+class NonTemporalDataset(MyDataset):
 
     def __init__(self, path, args, transform=None):
         self.path = path
@@ -203,6 +208,7 @@ class NonTemporalDataset(Dataset):
         self.transform = transform
         data = DataUtils.read_npy(path, flatten=self.args.flatten)
         self.feat, self.label = DataUtils.build_nontemporal_sequence(data)
+        self.raw_label = copy.deepcopy(self.label)
         self.idxs = torch.arange(self.feat.shape[0])
         self.prepare_batch_idxs()
     
@@ -229,13 +235,20 @@ class NonTemporalDataset(Dataset):
     def get_class_dim(self):
         return self.label.unique().shape[0]
     
+    def optimize(self, optimizer, payload=None):
+        if optimizer is None:
+            print("Optimizer is not set, use default label")
+        else:
+            new_label = optimizer.optimize(payload)
+            self.label = new_label
+            
     def randomize(self):
         np.random.shuffle(self.idxs)
     
     def reset(self):
         self.idxs = torch.arange(len(self.feat))
 
-class TemporalDataset(Dataset):
+class TemporalDataset(MyDataset):
     def __init__(self, feat, label, transform=None):
         self.feat = feat
         self.label = label
@@ -253,6 +266,13 @@ class TemporalDataset(Dataset):
         label = self.label[idx]
 
         return (feat, label)
+    
+    def optimize(self, optimizer, payload=None):
+        if optimizer is None:
+            print("Optimizer is not set, use default label")
+        else:
+            new_label = optimizer.optimize(self.label)
+            self.label = new_label
 
     def randomize(self):
         np.random.shuffle(self.idxs)

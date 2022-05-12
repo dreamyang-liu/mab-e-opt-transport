@@ -1,8 +1,9 @@
 from tqdm import tqdm, trange
-import torch
 from mse.utils.loss import intra_feature_loss, intra_prob_loss, inter_feature_loss, prob_loss
 from abc import ABC, abstractmethod
-
+import torch
+import os
+import shutil
 class Trainer(ABC):
 
     def __init__(self, model, optimizer, contrasive_data, noncontrasive_data, label_optimizer, args):
@@ -14,6 +15,11 @@ class Trainer(ABC):
         self.optimizer = optimizer
     
     def save(self, epoch=None):
+        if not os.path.exists(self.args.save_dir):
+            os.makedirs(self.args.save_dir)
+        else:
+            shutil.rmtree(self.args.save_dir)
+            os.makedirs(self.args.save_dir)
         if epoch is None:
             torch.save(self.model.state_dict(), f"{self.args.save_dir}/final.pth")
         else:
@@ -21,10 +27,11 @@ class Trainer(ABC):
 
     def train(self):
         self.model.train()
-        for ep in trange(self.args.epoch):
-            self.train_epoch(ep)
-            if self.args.save_checkpoint:
-                self.save(ep)
+        with trange(self.args.epoch) as progress:
+            for ep in progress:
+                self.train_epoch(ep, progress)
+                if self.args.save_checkpoint:
+                    self.save(ep)
     @abstractmethod
     def train_epoch(self, ep):
         # TODO: should be implemented in the child class
@@ -59,8 +66,21 @@ class ContrasiveTrainer(Trainer):
 
 class SinkhornTrainer(Trainer):
 
+    def get_ps(self):
+        probs = []
+        with torch.no_grad():
+            self.noncontrasive_data.reset()
+            for (feat, label) in self.noncontrasive_data:
+                feat, label = feat.to(self.args.device), label.to(self.args.device)
+                emb = self.model.compute_feature(feat)
+                prob = self.model.compute_probability_via_feature(emb)
+                probs.append(prob)
+        probs = torch.cat(probs, 0)
+        return probs
+
+
     def train_epoch_sinkhorn(self):
-        self.noncontrasive_data.optimize(self.label_optimizer)
+        self.noncontrasive_data.optimize(self.label_optimizer, self.get_ps())
         loss = 0
         self.optimizer.zero_grad()
         for (feat, label) in self.noncontrasive_data:
@@ -78,12 +98,17 @@ class SinkhornTrainer(Trainer):
 
 class HybridTrainer(ContrasiveTrainer, SinkhornTrainer):
     
-    def train_epoch(self, ep):
+    def train_epoch(self, ep, progress):
         if ep < self.args.warmup_epoch:
+            progress.set_description(f"warmup epoch")
             self.train_epoch_contrasive()
         else:
             if ep % 2 == 0:
+                progress.set_description(f"contrasive epoch")
                 self.train_epoch_contrasive()
             else:
+                progress.set_description(f"sinkhorn epoch")
                 self.train_epoch_sinkhorn()
     
+    def eval(self):
+        raise NotImplementedError("HybridTrainer does not support eval")
