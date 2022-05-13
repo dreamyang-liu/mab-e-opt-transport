@@ -37,5 +37,6 @@ parser.add_argument('--gauss_sd', type=float, default=0.1)
 parser.add_argument('-hi', '--hierarchical', action='store_true')
 parser.add_argument('-k', '--kmeans', action='store_true')
 parser.add_argument('-r', '--reducer', type=str, choices=['pca', 'tsne', 'umap'], default='pca')
+parser.add_argument('-n', '--eval_num_clusters', type=int, default=4)
 
 args = parser.parse_args()

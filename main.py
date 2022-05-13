@@ -3,6 +3,7 @@ from mse.label_optimizer.sinkhorn import PseudoOptimizer, SinkhornLabelOptimizer
 from mse.trainers.trainer import HybridTrainer
 from mse.data_generator.data_generator import DataUtils, ContrasiveLearningDataset, NonTemporalDataset
 from mse.utils.argparser import args
+from mse.eval.eval import Eval
 
 import torch.optim as optim
 print(args)
@@ -18,5 +19,8 @@ optimizer = optim.Adam(lr = args.lr, params=model.parameters())
 label_optimizer = PseudoOptimizer(args)
 label_optimizer = SinkhornLabelOptimizer(args)
 trainer = HybridTrainer(model, optimizer, contrasive_data, noncontrasive_data, label_optimizer, args)
-
 trainer.train()
+print("Trainer finished, start evaluating...")
+x, y = trainer.prepare_data_for_eval()
+evaluator = Eval(args)
+evaluator.eval(x, y)

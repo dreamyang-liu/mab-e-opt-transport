@@ -1,12 +1,13 @@
 import itertools
 import torch
 from sklearn.metrics import f1_score, accuracy_score
-
+from mse.eval.eval_utils import DimReducer, ClusterCls
 class Eval(object):
     
-    def __init__(self, dim_reducer, cluster_cls):
-        self.dim_reducer = dim_reducer
-        self.cluster_cls = cluster_cls
+    def __init__(self, args):
+        self.args = args
+        self.dim_reducer = DimReducer(64, 'pca')
+        self.cluster_cls = ClusterCls(self.args.eval_num_clusters)
     
     @classmethod
     def label_mapping(cls, label_num, prediction):
@@ -34,7 +35,7 @@ class Eval(object):
         # Cluster the data
         y_ = self.cluster_cls.fit(reduced_x)
         # Evaluate the model
-        y_permutations = self.label_mapping(y_.n_clusters, torch.tensor(y_.label_, dtype=torch.long))
+        y_permutations = self.label_mapping(self.args.eval_num_clusters, torch.tensor(y_, dtype=torch.long))
         max_f1 = 0
         max_acc = 0
         for y_permutation in y_permutations:
@@ -42,7 +43,11 @@ class Eval(object):
             f1 = f1_score(y, y_permutation.numpy(), average='macro')
             max_f1 = max(max_f1, f1)
             max_acc = max(max_acc, acc)
-        return (max_f1, max_acc)
+        print("*" * 30)
+        print("Accuracy: {}".format(max_acc))
+        print("F1: {}".format(max_f1))
+        print("*" * 30)
+        return max_f1, max_acc
 
 if __name__ == "__main__":
     prediction = torch.tensor([0, 1, 1, 2])

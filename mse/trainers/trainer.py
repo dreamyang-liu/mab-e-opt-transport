@@ -110,5 +110,22 @@ class HybridTrainer(ContrasiveTrainer, SinkhornTrainer):
                 progress.set_description(f"sinkhorn epoch")
                 self.train_epoch_sinkhorn()
     
+    def prepare_data_for_eval(self):
+        # prepare feature extracted from backbone
+        feats = []
+        labels = []
+        with torch.no_grad():
+            self.noncontrasive_data.reset()
+            for (feat, label) in self.noncontrasive_data:
+                feat, label = feat.to(self.args.device), label.to(self.args.device)
+                emb = self.model.compute_feature(feat)
+                feats.append(emb)
+                labels.append(label)
+        feats = torch.cat(feats, 0).cpu().numpy()
+        labels = torch.cat(labels, 0).cpu().numpy()
+        return feats, labels
+
+        
+    
     def eval(self):
         raise NotImplementedError("HybridTrainer does not support eval")
