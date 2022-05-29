@@ -2,7 +2,6 @@
 seed=42
 device=3
 sinkhorn_device=4
-save_dir='./save'
 warmup_epoch=20
 data_dir='./data/train.npy'
 lop=2
@@ -13,11 +12,12 @@ lr=1e-3
 dist=gauss
 gauss_sd=0.1
 reducer=umap
+save_dir='./save/train_contrasive_sinkhorn'
 
 
 
 
-python main.py \
+python train_contrasive_sinkhorn.py \
 --seed $seed \
 -f \
 -sc \
