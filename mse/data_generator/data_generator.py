@@ -66,17 +66,22 @@ class DataUtils:
         return feats, labels, feats_shadow, labels_shadow
 
     @staticmethod
-    def build_single_temporal_sequence(sequence, past_frames=0, future_frames=0, frame_skip=1):
+    def build_single_temporal_sequence(sequence, past_frames=0, future_frames=0, frame_skip=1, padding=True):
         sequence_feature = sequence['feat']
         sequence_label = sequence['label']
 
-        sample_number = sequence_feature.shape[0] - past_frames - future_frames
+        sample_number = sequence_feature.shape[0]
         temporal_feature = torch.tensor(torch.ones(sample_number, 1 + past_frames + future_frames, *sequence_feature.shape[1:])).float()
-        temporal_label = torch.tensor(torch.ones(sample_number)).long()
+        temporal_label = torch.tensor(sequence_label).long()
+
+        padding_head = torch.ones(past_frames, *sequence_feature.shape[1:]).float()
+        padding_tail = torch.ones(future_frames, *sequence_feature.shape[1:]).float()
+
+        sequence_feature = torch.cat((padding_head, sequence_feature, padding_tail), dim=0)
 
         for i in range(past_frames, sample_number + past_frames):
             temporal_feature[i - past_frames, ...] = sequence_feature[i - past_frames:i + future_frames+1, ...].clone()
-            temporal_label[i - past_frames] = sequence_label[i]
+        assert temporal_feature.shape[0] == temporal_label.shape[0], "feature and label should have the same length, check code here!"
 
         return {
             'feat': temporal_feature,
@@ -84,11 +89,11 @@ class DataUtils:
         }
     
     @staticmethod
-    def build_temporal_sequence(sequences, past_frames=0, future_frames=0, frame_skip=1):
+    def build_temporal_sequence(sequences, past_frames=0, future_frames=0, frame_skip=1, padding=True):
         feats = []
         labels = []
         for _, sequence in sequences.items():
-            sequence_temporal = DataUtils.build_single_temporal_sequence(sequence, past_frames, future_frames, frame_skip)
+            sequence_temporal = DataUtils.build_single_temporal_sequence(sequence, past_frames, future_frames, frame_skip, padding)
             feats.append(sequence_temporal['feat'])
             labels.append(sequence_temporal['label'])
         feats = torch.cat(feats, dim=0)
@@ -249,23 +254,36 @@ class NonTemporalDataset(MyDataset):
         self.idxs = torch.arange(len(self.feat))
 
 class TemporalDataset(MyDataset):
-    def __init__(self, feat, label, transform=None):
-        self.feat = feat
-        self.label = label
 
+    def __init__(self, path, args, transform=None):
+        self.path = path
+        self.args = args
         self.transform = transform
-        self.idxs = torch.arange(feat.shape[0])
+        data = DataUtils.read_npy(path, flatten=args.flatten)
+        past_frames = args.past_frames
+        future_frames = args.future_frames
+        frame_skip = args.frame_skip
+        self.feat, self.label = DataUtils.build_temporal_sequence(data, past_frames, future_frames, frame_skip)
+        self.raw_label = copy.deepcopy(self.label)
+        self.idxs = torch.arange(self.feat.shape[0])
+        self.prepare_batch_idxs()
+
+    def prepare_batch_idxs(self):
+        self.batch_idxs = []
+        for i in range(0, self.idxs.shape[0], self.args.batch_size):
+            self.batch_idxs.append([i, min(i + self.args.batch_size, self.idxs.shape[0])])
+        self.batch_idxs = torch.tensor(self.batch_idxs)
 
     def __len__(self):
-        return self.feat.shape[0].item()
-
+        return self.batch_idxs.shape[0]
+    
     def __getitem__(self, idx):
-        idx = self.idxs[idx]
+        idx = self.idxs[self.batch_idxs[idx][0]:self.batch_idxs[idx][1]]
 
         feat = self.feat[idx]
         label = self.label[idx]
 
-        return (feat, label)
+        return feat, label
     
     def optimize(self, optimizer, payload=None):
         if optimizer is None:

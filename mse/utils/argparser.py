@@ -17,6 +17,11 @@ parser.add_argument('-sc', '--save_checkpoint', action='store_true')
 parser.add_argument('--data_dir', type=str, default='data')
 parser.add_argument('-f','--flatten', action='store_true')
 
+# temporal arguments
+parser.add_argument('--past_frames', type=int, default=100)
+parser.add_argument('--future_frames', type=int, default=100)
+parser.add_argument('--frame_skip', type=int, default=1)
+
 # training arguments
 parser.add_argument('-lop', '--label_optimize_period', type=int, default=1)
 parser.add_argument('--epoch', type=int, default=10)
