@@ -13,8 +13,13 @@ class DataUtils:
     @staticmethod
     def read_npy(file_path, flatten=False):
         data_dict = np.load(file_path, allow_pickle=True).item()
-        sequences_keys = data_dict['sequences'].keys()
-        sequences_values = data_dict['sequences']
+        print (data_dict.keys())
+        if 'calms21' in file_path:
+            query_key = 'annotator-id_0'
+        else:
+            query_key = 'sequences'
+        sequences_keys = data_dict[query_key].keys()
+        sequences_values = data_dict[query_key]
         sequences = {}
         for key in sequences_keys:
             feat = torch.from_numpy(sequences_values[key]['keypoints']).float()
@@ -297,6 +302,9 @@ class TemporalDataset(MyDataset):
     
     def reset(self):
         self.idxs = torch.arange(len(self.feat))
+
+    def get_input_dim(self):
+        return self.feat.shape[1:]
 
 
 if __name__ == "__main__":
