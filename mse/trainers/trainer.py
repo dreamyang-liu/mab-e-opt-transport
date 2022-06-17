@@ -4,9 +4,10 @@ from abc import ABC, abstractmethod
 import torch
 import os
 import shutil
+from sklearn.metrics import f1_score, accuracy_score
 class Trainer(ABC):
 
-    def __init__(self, model, optimizer, contrasive_data, noncontrasive_data, label_optimizer, args):
+    def __init__(self, model, optimizer, contrasive_data=None, noncontrasive_data=None, label_optimizer=None, args=None):
         self.model = model
         self.contrasive_data = contrasive_data
         self.noncontrasive_data = noncontrasive_data
@@ -41,7 +42,7 @@ class Trainer(ABC):
             self.noncontrasive_data.reset()
             for (feat, label) in self.noncontrasive_data:
                 feat, label = feat.to(self.args.device), label.to(self.args.device)
-                emb = self.model.compute_feature(feat)
+                emb = self.model.compute_features(feat)
                 feats.append(emb)
                 labels.append(label)
         feats = torch.cat(feats, 0).cpu().numpy()
@@ -59,13 +60,15 @@ class Trainer(ABC):
 class ContrasiveTrainer(Trainer):
 
     def train_epoch_contrasive(self):
+        assert self.contrasive_data is not None, 'contrasive trainer requires contrasive data'
         loss = 0
         self.optimizer.zero_grad()
         for (feat, label), (feat_shadow, label_shadow) in self.contrasive_data: 
             feat, label = feat.to(self.args.device), label.to(self.args.device)
             feat_shadow, label_shadow = feat_shadow.to(self.args.device), label_shadow.to(self.args.device)
-            emb = self.model.compute_feature(feat)
-            emb_shadow = self.model.compute_feature(feat_shadow)
+            breakpoint()
+            emb = self.model.compute_features(feat)
+            emb_shadow = self.model.compute_features(feat_shadow)
             loss_feat_intra = intra_feature_loss(emb, emb_shadow)
             loss_feat_inter = inter_feature_loss(emb, emb_shadow)
             prob = self.model.compute_probability_via_feature(emb)
@@ -95,6 +98,7 @@ class SinkhornTrainer(Trainer):
 
 
     def train_epoch_sinkhorn(self):
+        assert self.label_optimizer is not None, 'sinkhorn trainer requires label optimizer'
         self.noncontrasive_data.optimize(self.label_optimizer, self.get_ps())
         loss = 0
         self.optimizer.zero_grad()
@@ -108,6 +112,7 @@ class SinkhornTrainer(Trainer):
         return loss.item()
     
     def train_epoch(self):
+        assert self.label_optimizer is not None, 'sinkhorn trainer requires label optimizer'
         return self.train_epoch_sinkhorn()
     
     def eval(self):
@@ -138,7 +143,7 @@ class FullSupervisedTrainer(Trainer):
         self.optimizer.zero_grad()
         for (feat, label) in self.noncontrasive_data:
             feat, label = feat.to(self.args.device), label.to(self.args.device)
-            emb = self.model.compute_feature(feat)
+            emb = self.model.compute_features(feat)
             prob = self.model.compute_probability_via_feature(emb)
             loss += prob_loss(prob, label)
         loss.backward()
@@ -163,3 +168,96 @@ class FullSupervisedTrainer(Trainer):
         
     def eval(self):
         raise NotImplementedError("FullSupervisedTrainer does not support eval")
+
+class Conv1dTrainer(Trainer):
+    def train_epoch(self, ep, progress):
+        loss = 0
+        self.model.train()
+        for (feat, label) in self.noncontrasive_data:
+            self.optimizer.zero_grad()
+            feat, label = feat.to(self.args.device), label.to(self.args.device)
+            emb = self.model.compute_features(feat)
+            prob = self.model.compute_probability_via_feature(emb)
+            loss = prob_loss(prob, label)
+            loss.backward()
+            self.optimizer.step()
+        progress.set_description(f"conv1d epoch {ep}: {loss.item()}")
+        return loss.item()
+
+    def train(self, noncontrasive_data_test):
+        self.model.train()
+        with trange(self.args.epoch) as progress:
+            for ep in progress:
+                self.train_epoch(ep, progress)
+                if ep % 3 ==0:
+                    self.eval(noncontrasive_data_test)
+                if self.args.save_checkpoint:
+                    self.save(ep)
+
+    def eval(self, noncontrasive_data_test):
+        acc_list = []
+        f1_list = []
+
+        self.model.eval()
+        with torch.no_grad():
+            for (feat, label) in noncontrasive_data_test:
+                feat, label = feat.to(self.args.device), label.to(self.args.device)
+                y_pred = self.model.forward(feat)
+                label_pred = torch.argmax(y_pred, 1)
+                acc_list.append(accuracy_score(label.cpu().numpy(), label_pred.cpu().numpy()))
+                f1_list.append(f1_score(label.cpu().numpy(), label_pred.cpu().numpy(), average='macro'))
+
+        print ( 'Average Accuracy: {:.5f}'.format(sum(acc_list)/len(acc_list)))
+        print ( 'Average F1: {:.5f}'.format(sum(f1_list)/len(f1_list)))
+        # print("*" * 30)
+        # print("Accuracy: {}".format(max_acc))
+        # print("F1: {}".format(max_f1))
+        # print("*" * 30)
+
+
+
+class Conv1dContrasiveTrainer(Conv1dTrainer, ContrasiveTrainer):
+    def train_epoch(self, ep, progress):
+        loss = 0
+        self.model.train()
+        for (feat, label) in self.noncontrasive_data:
+            self.optimizer.zero_grad()
+            feat, label = feat.to(self.args.device), label.to(self.args.device)
+            emb = self.model.compute_features(feat)
+            prob = self.model.compute_probability_via_feature(emb)
+            loss = prob_loss(prob, label)
+            loss.backward()
+            self.optimizer.step()
+        progress.set_description(f"conv1d epoch {ep}: {loss.item()}")
+        return loss.item()
+
+    def train(self, noncontrasive_data_test):
+        self.model.train()
+        with trange(self.args.epoch) as progress:
+            for ep in progress:
+                self.train_epoch_contrasive()
+                self.train_epoch(ep, progress)
+                if ep % 3 ==0:
+                    self.eval(noncontrasive_data_test)
+                if self.args.save_checkpoint:
+                    self.save(ep)
+
+    def eval(self, noncontrasive_data_test):
+        acc_list = []
+        f1_list = []
+
+        self.model.eval()
+        with torch.no_grad():
+            for (feat, label) in noncontrasive_data_test:
+                feat, label = feat.to(self.args.device), label.to(self.args.device)
+                y_pred = self.model.forward(feat)
+                label_pred = torch.argmax(y_pred, 1)
+                acc_list.append(accuracy_score(label.cpu().numpy(), label_pred.cpu().numpy()))
+                f1_list.append(f1_score(label.cpu().numpy(), label_pred.cpu().numpy(), average='macro'))
+
+        print ( 'Average Accuracy: {:.5f}'.format(sum(acc_list)/len(acc_list)))
+        print ( 'Average F1: {:.5f}'.format(sum(f1_list)/len(f1_list)))
+        # print("*" * 30)
+        # print("Accuracy: {}".format(max_acc))
+        # print("F1: {}".format(max_f1))
+        # print("*" * 30)
